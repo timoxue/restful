@@ -16,5 +16,6 @@ class Serializrable(object):
     def from_dict(self, attributes):
         """Update the current instance base on attribute->value by *attributes*"""
         for attribute in attributes:
+            print(attribute)
             setattr(self, attribute, attributes[attribute])
         return self
