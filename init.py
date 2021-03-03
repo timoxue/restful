@@ -6,6 +6,7 @@ if __name__ == '__main__':
     command =  sys.argv[1]
     if command == 'build':
         db.create_all()
+        print('created successfully')
     elif command == 'update':
         admin = UserModel(username='admin', email='admin@example.com')
         guest = UserModel(username='guest', email='guest@example.com')
