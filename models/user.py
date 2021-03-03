@@ -1,8 +1,9 @@
 # encoding:UTF-8 
 
 from db import db
+from models import Serializrable
 
-class User(db.Model):
+class User(db.Model, Serializrable):
     __tablename__ = 'users' 
     id = db.Column(db.Integer, db.Sequence('id_seq'), primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)

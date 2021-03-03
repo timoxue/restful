@@ -23,11 +23,7 @@ class UserList(Resource):
     def post(self):
            
         # 查询该国家是否存在于数据库中
-            name = request.json['username']
-            u_id =  request.json['u_id']
-            #udata = request.get_json()
-           
-            user = UserModel(username = name,u_id = u_id)
+            user = UserModel.from_dict(request.json)
             print(user)
             db.session.add(user)
             db.session.commit()

@@ -4,6 +4,9 @@ from router.HelloWord import HelloWorld
 from router.User import User
 from router.User import UserList
 from models.db import app
+from config import gloabl_config
+
+import os
 
 api = Api(app)
 
