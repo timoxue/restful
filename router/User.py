@@ -13,6 +13,11 @@ class User(Resource):
             return user.json()
         return NotFound.message, NotFound.code
 
+    def delete(self, user_id):
+        user = UserModel.query.filter_by(username=user_id).first()
+        db.session.delete(user)
+        db.session.commit()
+        return Success.message, Success.code
 
 
 class UserList(Resource):
