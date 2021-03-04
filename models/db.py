@@ -18,15 +18,13 @@ SQLALCHEMY_DATABASE_URI = 'oracle://%s:%s@%s:%s/%s' % (db_user, db_password, db_
 
 print(SQLALCHEMY_DATABASE_URI)
 print(db_hostname)
-#Config flask app
+
 app = Flask(__name__)
 # Connect oracle://scott:tiger@127.0.0.1:1521/sidname
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 #app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 #app.config['SQLALCHEMY_ECHO'] = True
 app.config['root_folder'] = root_folder
-
-print("Conneted!")
 
 # orm instance
 db = SQLAlchemy(app)

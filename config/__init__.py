@@ -4,6 +4,9 @@ import os,sys
 ## read some config file
 cwd = os.path.join(os.getcwd(), sys.argv[0]) 
 root_folder = (os.path.dirname(cwd))
-db_config = ConfigParser.SafeConfigParser()
-db_config.read([os.path.join(root_folder,'config/upload.conf'),os.path.join(root_folder,'config/connection.conf')])
-gloabl_config = db_config
+config = ConfigParser.SafeConfigParser()
+config.read(os.path.join(root_folder,'config/upload.conf'))
+upload_config = config
+
+cwd = os.path.join(os.getcwd(), sys.argv[0]) 
+root_folder = os.path.dirname(cwd)

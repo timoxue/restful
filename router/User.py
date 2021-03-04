@@ -4,15 +4,14 @@ from flask import Flask, jsonify, abort, request
 from models.user import User as UserModel
 #from models.user import UserModel
 from models.db import db
-import json
-from router.Status import Success
+from router.Status import Success, NotFound
 
 class User(Resource):
     def get(self, user_id):
         user = UserModel.query.filter_by(username=user_id).first()
         if user:
             return user.json()
-        return {'message': 'User not found'}, 404
+        return NotFound.message, NotFound.code
 
 
 
