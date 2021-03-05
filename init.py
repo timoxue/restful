@@ -1,5 +1,9 @@
 from models.db import db, app
 from models.user import User as UserModel
+from models.project import Project as ProjectModel
+from models.program import Program as ProgramModel
+
+
 import sys,os
 
 if __name__ == '__main__':

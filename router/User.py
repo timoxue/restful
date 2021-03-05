@@ -9,7 +9,7 @@ class User(Resource):
     def get(self, user_id):
         user = UserModel.query.filter_by(username=user_id).first()
         if user:
-            return user.json()
+            return user.to_dict()
         return NotFound.message, NotFound.code
 
     def delete(self, user_id):
