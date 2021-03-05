@@ -2,6 +2,4 @@
 models/*.pyc
 router/*.pyc
 config/connection.conf
-upload/template/*
-upload/updated/*
 config/connection.conf

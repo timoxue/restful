@@ -12,7 +12,7 @@ if __name__ == '__main__':
         db.create_all()
         print('created successfully')
     elif command == 'update':
-        admin = UserModel(username='admin', u_email='admin@example.com', u_id="123", u_password='123', u_authority="jingli", u_department="admin", is_delete=False)
+        admin = UserModel(username='admin', u_email='admin@example.com', u_id="123", u_name='what', u_password='123', u_tele = "13888888888", u_authority="jingli", u_department="admin", is_delete=False)
         #guest = UserModel(username='guest', email='guest@example.com')
         db.session.add(admin)
         #db.session.add(guest)

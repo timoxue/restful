@@ -4,13 +4,14 @@ from router.HelloWord import HelloWorld
 from router.User import UserList, User
 from router.Project import Project, ProjectList
 from router.Program import Program, ProgramList
-
-
-
 from router.File import File
 from models.db import app
+from utils.security import authenticate, identity
+from flask_jwt import JWT, jwt_required, current_identity
 
 api = Api(app)
+app.secret_key = 'super_secret'
+jwt = JWT(app, authenticate, identity)
 
 api.add_resource(HelloWorld, '/')
 api.add_resource(User, '/user/<string:user_id>')
