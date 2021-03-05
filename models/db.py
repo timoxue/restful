@@ -5,7 +5,7 @@ import sys, os
 from flask_cors import CORS
 cwd = os.path.join(os.getcwd(), sys.argv[0]) 
 root_folder = (os.path.dirname(cwd))
-
+os.environ["NLS_LANG"] = "GERMAN_GERMANY.UTF8" 
 #Get the oracle database connection information
 db_config = ConfigParser.SafeConfigParser()
 db_config.read(os.path.join(root_folder,'config/connection.conf'))

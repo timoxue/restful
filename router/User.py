@@ -1,4 +1,3 @@
-# encoding:UTF-8 
 from flask_restful import Resource
 from flask import Flask, jsonify, abort, request
 from models.user import User as UserModel
@@ -36,7 +35,7 @@ class UserList(Resource):
         #print(json.load(request.json))
         user = UserModel()
         user = user.from_dict(request.json)
-        print(user.u_department)
+        
         db.session.add(user)
         db.session.commit()
         return Success.message, Success.code
