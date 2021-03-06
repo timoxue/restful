@@ -24,11 +24,17 @@ class Program(Resource):
 class ProgramList(Resource):
     def get(self):
 
-        # programs = [program.to_dict() for program in ProgramModel.query
-        #              .outerjoin(ProjectModel, ProgramModel.pro_id == ProjectModel.id)]
-        programs = [programs.to_dict() for programs in ProgramModel.query.all()]
-        
-        return {'data': programs}
+        #programs = ProgramModel.query.join(ProjectModel, ProgramModel.pro_id == ProjectModel.id).all()
+        #programs = db.session.query(ProgramModel,ProjectModel).outerjoin(ProjectModel).filter(ProgramModel.pro_id == ProjectModel.id)
+        #result = db.session.execute(programs)
+        #programs = [program.to_dict() for program in ProgramModel.query
+        #              .outerjoin(ProjectModel, ProgramModel.pro_id == ProjectModel.id).add_entity(ProjectModel)]
+        print (programs)
+        #result = db.session.execute(programs)
+        print (result)
+        #result = [program.to_dict() for program in programs]
+        #if programs:
+            #return {'data': result}
         
         # for user in users:
         #     for k in list(user.keys()):
