@@ -2,6 +2,8 @@ from models.db import db, app
 from models.user import User as UserModel
 from models.project import Project as ProjectModel
 from models.program import Program as ProgramModel
+from models.Test import People as PeopleModel
+from models.Test import Address as AddressModel
 
 
 import sys,os
@@ -13,14 +15,36 @@ if __name__ == '__main__':
         print('created successfully')
     elif command == 'update':
         admin = UserModel(username='admin', u_email='admin@example.com', u_id="123", u_name='what', u_password='123', u_tele = "13888888888", u_authority="jingli", u_department="admin", is_delete=False)
+        test_admin = PeopleModel(username='admin', real_title="Manager")
+        test_addr= AddressModel(username='admin', address='123')
+        test_addr1= AddressModel(username='admin', address='456')
         #guest = UserModel(username='guest', email='guest@example.com')
         db.session.add(admin)
-        #db.session.add(guest)
+        db.session.add(test_admin)
+        db.session.add(test_addr)
+        db.session.add(test_addr1)
         db.session.commit()
     elif command == 'clean':
+        #db.metadata.clear()
         db.drop_all()
     elif command == 'query':
-        user = UserModel.query.filter_by(username='admin').first()
-        print(user.email)
+        #user = UserModel.query.filter_by(username='admin').first()
+        #print(user.email)
+        # Option 1
+        joined_table = db.session.query(PeopleModel, AddressModel).filter(PeopleModel.username==AddressModel.username) \
+                        .with_entities(PeopleModel.username, PeopleModel.real_title, AddressModel.address) \
+                        .all()
+        print(joined_table)
+        for x in joined_table:
+            print(x.real_title, x.address)
+
+        # Option 2
+        joined_table = PeopleModel.query.join(AddressModel, PeopleModel.username==AddressModel.username) \
+                        .with_entities(PeopleModel.real_title, AddressModel.address) \
+                        .all()
+        print(joined_table)
+        for x in joined_table:
+            print(x.real_title, x.address)
+
     else:
         print("command not supported!")
