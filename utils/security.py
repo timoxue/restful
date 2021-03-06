@@ -7,7 +7,7 @@ users_in_memory = UserModel.query.filter_by(is_delete = False).all()
 #username_table would give the id, username, password from the userid_mapping, so we do not have to iterate over the users again and again
 username_table = {u.username: u for u in users_in_memory}
 #userid_table is the userid mapping
-userid_table = {u.u_id: u for u in users_in_memory}
+userid_table = {u.id: u for u in users_in_memory}
 
 def authenticate(username, password):
     #None is the default value i.e if there is no username like the given.

@@ -19,3 +19,6 @@ class Serializrable(object):
             print(attribute)
             setattr(self, attribute, attributes[attribute])
         return self
+    
+    def object_to_dict(self, results):
+        return [dict(zip(result.keys(), result)) for result in results]

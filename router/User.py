@@ -4,6 +4,7 @@ from models.user import User as UserModel
 #from models.user import UserModel
 from models.db import db
 from router.Status import Success, NotFound
+from flask_jwt import JWT, jwt_required, current_identity
 
 class User(Resource):
     def get(self, user_id):
@@ -20,8 +21,8 @@ class User(Resource):
 
 
 class UserList(Resource):
+    @jwt_required()
     def get(self):
-        
         users = [user.to_dict() for user in UserModel.query.filter_by(is_delete = False).all()]
         for user in users:
             for k in list(user.keys()):
