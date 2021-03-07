@@ -53,8 +53,9 @@ class Combined:
 
     def to_dict(self, results):
         #print(self.filter_list)
-        value = {}
+        final = []
         for result in results:
+            value = {}
             for i in range(0, self.list_l):
                  for column in self.filter_list[i]:
                     attribute = getattr(result[i], column)
@@ -63,5 +64,6 @@ class Combined:
                     value[column] = attribute
                 #for key in result[i].__table__.columns.keys(), getattr(result[i], 'id'))
                 #return [dict(zip(result.keys(), result)) for result in results]
+            final.append(value)
         #print(value)
-        return value
+        return final
