@@ -1,4 +1,5 @@
 import datetime
+import collections
 
 class Serializrable(object):
     """A SQLAlchemy mixin class that can serialize itself as a JSON object"""
@@ -16,9 +17,51 @@ class Serializrable(object):
     def from_dict(self, attributes):
         """Update the current instance base on attribute->value by *attributes*"""
         for attribute in attributes:
-            print(attribute)
+            #print(attribute)
             setattr(self, attribute, attributes[attribute])
         return self
+
+    def add_attr(self, k, v):
+        return self
+
+    def remove_attr(self, k):
+        delattr(self, k)
+        return self
+
+class Combined:
+    def __init__(self,  *args):
+        self.class_list = args
+        self.list_l = len(args)
+        self.exclude_list=[]
+        self.columns_list = [s.__table__.columns.keys() for s in args]
+        self.filter_list = []
     
-    def object_to_dict(self, results):
-        return [dict(zip(result.keys(), result)) for result in results]
+    def exclude(self, *args):
+        self.exclude_list = args
+        self.filter_list = list(map(self.differ, self.columns_list, self.exclude_list))
+        return self
+
+    def differ(self, a , b):
+        a_multiset = collections.Counter(a)
+        b_multiset = collections.Counter(b)
+        #print(a_multiset, b_multiset)
+        #overlap = list((a_multiset & b_multiset).elements())
+        a_remainder = list((a_multiset - b_multiset).elements())
+        #b_remainder = list((b_multiset - a_multiset).elements())
+
+        return a_remainder
+
+    def to_dict(self, results):
+        #print(self.filter_list)
+        value = {}
+        for result in results:
+            for i in range(0, self.list_l):
+                 for column in self.filter_list[i]:
+                    attribute = getattr(result[i], column)
+                    if isinstance(attribute, datetime.datetime):
+                        attribute = str(attribute)
+                    value[column] = attribute
+                #for key in result[i].__table__.columns.keys(), getattr(result[i], 'id'))
+                #return [dict(zip(result.keys(), result)) for result in results]
+        #print(value)
+        return value

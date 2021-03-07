@@ -14,7 +14,6 @@ class Address(db.Model, Serializrable):
     id = db.Column(db.Integer, db.Sequence('id_seq'), primary_key=True)
     username = db.Column(db.String(80),  db.ForeignKey('people.username')) 
     address = db.Column(db.String(120),  nullable=False)
-    
 
     def __repr__(self):
         return '<Address %r.%r>' % (self.username, self.address)

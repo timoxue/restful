@@ -4,7 +4,9 @@ from models.project import Project as ProjectModel
 from models.program import Program as ProgramModel
 from models.Test import People as PeopleModel
 from models.Test import Address as AddressModel
-from models import Serializrable
+from models import Combined
+from sqlalchemy.orm import with_polymorphic
+
 
 
 import sys,os
@@ -28,15 +30,19 @@ if __name__ == '__main__':
     elif command == 'clean':
         #db.metadata.clear()
         db.drop_all()
-    elif command == 'query':
+    elif command == 'query': 
         #user = UserModel.query.filter_by(username='admin').first()
         #print(user.email)
         # Option 1
         joined_table = db.session.query(PeopleModel, AddressModel).filter(PeopleModel.username==AddressModel.username) \
                         .all()
-        print(Serializrable().object_to_dict(joined_table))
-
-
+        print(joined_table)
+        #test1
+        Combined(PeopleModel, AddressModel).exclude(['id'], ['id']).to_dict(joined_table)
+        #test2
+        user_json = UserModel.query.filter_by(username='admin').first().to_dict()
+        user_json.update({'testkey': 'haha'})
+        print(user_json)
 
     else:
         print("command not supported!")
