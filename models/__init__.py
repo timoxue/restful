@@ -40,10 +40,11 @@ class Combined:
     
     def get_column_list(self, args):
         for s in args:
-            if type(s) is list:
-                self.columns_list.append(s[0].keys())
+            print((s))
+            if type(s) is dict:
+                self.columns_list.append(s.keys())
             else:
-                self.columns_list.append(s.__table__.columns.keys())
+                self.columns_list.append(s.keys())
 
     def exclude(self, *args):
         self.exclude_list = args

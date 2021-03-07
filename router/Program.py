@@ -15,10 +15,16 @@ class Program(Resource):
     #@jwt_required()
     def get(self, task_id):
         #print(current_identity)
-        joined_table = db.session.query(ProgramModel, ProjectModel,InstoreModel).outerjoin(ProjectModel).outerjoin(InstoreModel,InstoreModel.program_code == ProgramModel.program_code).filter(ProgramModel.task_id==task_id).all()
-        result = Combined(ProgramModel, ProjectModel,InstoreModel).exclude(['id'], ['id'],['id']).to_dict(joined_table)
-        if result:
-            return result
+        joined_table = db.session.query(ProgramModel, ProjectModel,func.sum(InstoreModel.is_num).label('sum')).outerjoin(ProjectModel).outerjoin(InstoreModel,InstoreModel.program_code == ProgramModel.program_code).filter(ProgramModel.task_id==task_id).group_by(ProgramModel, ProjectModel).all()
+        print(type(joined_table[0]))
+        data = [dict(zip(result.keys(), result)) for result in joined_table]
+        print(data)
+        result = Combined(ProgramModel, ProjectModel,{"sum":0}).exclude(['id'], ['id']).to_dict(joined_table)
+        
+        
+        
+        if data:
+            return data
         return NotFound.message, NotFound.code
 
     def delete(self, task_id):
