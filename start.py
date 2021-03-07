@@ -8,9 +8,12 @@ from router.File import File
 from models.db import app
 from utils.security import authenticate, identity
 from flask_jwt import JWT, jwt_required, current_identity
+import datetime
 
 api = Api(app)
 app.secret_key = 'super_secret'
+app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(days=10)
+
 jwt = JWT(app, authenticate, identity)
 
 api.add_resource(HelloWorld, '/')

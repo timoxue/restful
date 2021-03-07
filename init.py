@@ -4,6 +4,7 @@ from models.project import Project as ProjectModel
 from models.program import Program as ProgramModel
 from models.Test import People as PeopleModel
 from models.Test import Address as AddressModel
+from models import Serializrable
 
 
 import sys,os
@@ -32,19 +33,10 @@ if __name__ == '__main__':
         #print(user.email)
         # Option 1
         joined_table = db.session.query(PeopleModel, AddressModel).filter(PeopleModel.username==AddressModel.username) \
-                        .with_entities(PeopleModel.username, PeopleModel.real_title, AddressModel.address) \
                         .all()
-        print(joined_table)
-        for x in joined_table:
-            print(x.real_title, x.address)
+        print(Serializrable().object_to_dict(joined_table))
 
-        # Option 2
-        joined_table = PeopleModel.query.join(AddressModel, PeopleModel.username==AddressModel.username) \
-                        .with_entities(PeopleModel.real_title, AddressModel.address) \
-                        .all()
-        print(joined_table)
-        for x in joined_table:
-            print(x.real_title, x.address)
+
 
     else:
         print("command not supported!")
