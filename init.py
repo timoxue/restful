@@ -2,6 +2,8 @@ from models.db import db, app
 from models.user import User as UserModel
 from models.project import Project as ProjectModel
 from models.program import Program as ProgramModel
+from models.instore import Instore as InstoreModel
+
 from models.Test import People as PeopleModel
 from models.Test import Address as AddressModel
 from models import Combined

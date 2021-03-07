@@ -1,5 +1,6 @@
 from db import db
 from models import Serializrable
+from models.instore import Instore as Instore
 
 class Program(db.Model, Serializrable):
     __tablename__ = 'program' 
@@ -19,7 +20,6 @@ class Program(db.Model, Serializrable):
     sample_name = db.Column(db.String(80))
     sample_material = db.Column(db.String(80))
     sample_num = db.Column(db.String(80))
-    
 
     def __repr__(self):
         return '<task_id %r>' % self.task_id

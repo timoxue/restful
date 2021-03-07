@@ -7,6 +7,7 @@ from router.Status import Success, NotFound
 from flask_jwt import JWT, jwt_required, current_identity
 
 class User(Resource):
+    @jwt_required()
     def get(self, user_id):
         user = UserModel.query.filter_by(username=user_id).first()
         if user:

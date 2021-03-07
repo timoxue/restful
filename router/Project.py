@@ -4,8 +4,13 @@ from models.project import Project as ProjectModel
 from models.db import db
 from router.Status import Success, NotFound
 from flask_jwt import JWT, jwt_required, current_identity
+
+
 class Project(Resource):
+    @jwt_required()
     def get(self, pro_name):
+        username = current_identity.to_dict()['username']
+        print (username)
         project = ProjectModel.query.filter_by(pro_name=pro_name).first()
         if project:
             return project.to_dict()
@@ -21,8 +26,9 @@ class Project(Resource):
 class ProjectList(Resource):
     @jwt_required()
     def get(self):
-      
-        projects = [project.to_dict() for project in ProjectModel.query.all()]
+        username = current_identity.to_dict()['username']
+        print (username)
+        projects = [project.to_dict() for project in ProjectModel.query.filter(ProjectModel.create_name == username).all()]
         # for user in users:
         #     for k in list(user.keys()):
         #         #print (k)
