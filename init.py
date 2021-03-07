@@ -38,10 +38,9 @@ if __name__ == '__main__':
                         .all()
         print(joined_table)
         #test1
-        Combined(PeopleModel, AddressModel).exclude(['id'], ['id']).to_dict(joined_table)
+        print(Combined(PeopleModel, AddressModel).exclude(['id'], ['id']).to_dict(joined_table))
         #test2
         user_json = UserModel.query.filter_by(username='admin').first().to_dict()
-        user_json.update({'testkey': 'haha'})
         print(user_json)
 
     else:
