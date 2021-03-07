@@ -36,12 +36,13 @@ if __name__ == '__main__':
         # Option 1
         joined_table = db.session.query(PeopleModel, AddressModel).filter(PeopleModel.username==AddressModel.username) \
                         .all()
-        print(joined_table)
+        print(type(joined_table[0]))
         #test1
-        print(Combined(PeopleModel, AddressModel).exclude(['id'], ['id']).to_dict(joined_table))
+        anmo_rest = Combined(PeopleModel, AddressModel).exclude(['id'], ['id']).to_dict(joined_table)
+        print(anmo_rest)
         #test2
-        user_json = UserModel.query.filter_by(username='admin').first().to_dict()
-        print(user_json)
+        #user = UserModel.query.filter_by(username='admin').first()
+        #Combined(UserModel, anmo_rest).to_dict(joined_table)
 
     else:
         print("command not supported!")

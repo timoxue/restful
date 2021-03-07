@@ -33,9 +33,18 @@ class Combined:
         self.class_list = args
         self.list_l = len(args)
         self.exclude_list=[]
-        self.columns_list = [s.__table__.columns.keys() for s in args]
+        self.columns_list = []
         self.filter_list = []
+        self.get_column_list(args)
+        self.filter_list = self.columns_list
     
+    def get_column_list(self, args):
+        for s in args:
+            if type(s) is list:
+                self.columns_list.append(s[0].keys())
+            else:
+                self.columns_list.append(s.__table__.columns.keys())
+
     def exclude(self, *args):
         self.exclude_list = args
         self.filter_list = list(map(self.differ, self.columns_list, self.exclude_list))
@@ -53,7 +62,11 @@ class Combined:
 
     def to_dict(self, results):
         #print(self.filter_list)
+
         final = []
+        
+        if type(results) is not list:
+            results = [results]
         for result in results:
             value = {}
             for i in range(0, self.list_l):
