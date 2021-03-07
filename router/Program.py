@@ -5,10 +5,13 @@ from models.project import Project as ProjectModel
 
 from models.db import db
 from router.Status import Success, NotFound
+from flask_jwt import JWT, jwt_required, current_identity
 
 
 class Program(Resource):
+    @jwt_required()
     def get(self, task_id):
+        print(current_identity)
         program = ProgramModel.query.filter_by(task_id=task_id).first()
         if program:
             return program.to_dict()
@@ -25,11 +28,11 @@ class ProgramList(Resource):
     def get(self):
 
         #programs = ProgramModel.query.join(ProjectModel, ProgramModel.pro_id == ProjectModel.id).all()
-        #programs = db.session.query(ProgramModel,ProjectModel).outerjoin(ProjectModel).filter(ProgramModel.pro_id == ProjectModel.id)
-        #result = db.session.execute(programs)
+        programs = db.session.query(ProgramModel,ProjectModel).outerjoin(ProjectModel).filter(ProgramModel.pro_id == ProjectModel.id)
+        result = db.session.execute(programs).fetchall()
         #programs = [program.to_dict() for program in ProgramModel.query
         #              .outerjoin(ProjectModel, ProgramModel.pro_id == ProjectModel.id).add_entity(ProjectModel)]
-        print (programs)
+        #print (programs)
         #result = db.session.execute(programs)
         print (result)
         #result = [program.to_dict() for program in programs]

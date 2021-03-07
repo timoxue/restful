@@ -3,7 +3,7 @@ from flask import Flask, jsonify, abort, request
 from models.project import Project as ProjectModel
 from models.db import db
 from router.Status import Success, NotFound
-
+from flask_jwt import JWT, jwt_required, current_identity
 class Project(Resource):
     def get(self, pro_name):
         project = ProjectModel.query.filter_by(pro_name=pro_name).first()
@@ -19,8 +19,9 @@ class Project(Resource):
 
 
 class ProjectList(Resource):
+    @jwt_required()
     def get(self):
-        
+      
         projects = [project.to_dict() for project in ProjectModel.query.all()]
         # for user in users:
         #     for k in list(user.keys()):
