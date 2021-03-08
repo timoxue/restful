@@ -8,7 +8,8 @@ class Program(db.Model, Serializrable):
     id = db.Column(db.Integer, db.Sequence('id_seq'), primary_key=True,autoincrement=True)
     pro_name = db.Column(db.String(80), nullable=False,unique=True) 
     pro_id = db.Column(db.Integer,db.ForeignKey('project.id'), nullable=False) 
-    task_id = db.Column(db.String(80),nullable = False)  
+    order_number = db.Column(db.String(80),nullable = False)
+    task_id = db.Column(db.String(80),nullable = False) 
     task_path = db.Column(db.String(80))
     program_code = db.Column(db.String(80),nullable = False)  
     program_code_path = db.Column(db.String(80))
@@ -22,4 +23,4 @@ class Program(db.Model, Serializrable):
     sample_num = db.Column(db.String(80))
 
     def __repr__(self):
-        return '<task_id %r>' % self.task_id
+        return '<order_number %r>' % self.order_number

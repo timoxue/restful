@@ -6,7 +6,7 @@ from models.program import Program as Program
 class Project(db.Model, Serializrable):
     __tablename__ = 'project' 
    
-    id = db.Column(db.Integer, db.Sequence('id_seq'),primary_key=True)
+    id = db.Column(db.Integer, db.Sequence('id_seq'),primary_key=True,autoincrement=True)
     pro_name = db.Column(db.String(80), nullable=False,unique=True)
     res_name = db.Column(db.String(80),nullable = False)  
     create_name = db.Column(db.String(80),nullable = False)  

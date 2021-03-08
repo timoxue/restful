@@ -7,10 +7,11 @@ from models import Serializrable
 class Instore(db.Model, Serializrable):
     __tablename__ = 'instore' 
    
-    id = db.Column(db.Integer, db.Sequence('id_seq'),primary_key=True)
+    id = db.Column(db.Integer, db.Sequence('id_seq'),primary_key=True,autoincrement=True)
     is_type = db.Column(db.Integer, nullable=False) #0,1,2
     in_date = db.Column(db.String(8),nullable = False)
     program_code = db.Column(db.String(80),nullable = False)
+    order_number = db.Column(db.String(80),nullable = False)
     is_status = db.Column(db.Integer, nullable=False) #0,1,2
     is_num = db.Column(db.Integer, nullable=False)
     in_store_num = db.Column(db.Integer, nullable=False,default = 0)
@@ -22,4 +23,4 @@ class Instore(db.Model, Serializrable):
     check_form_path = db.Column(db.String(120),nullable = False)
 
     def __repr__(self):
-         return '%s (%r, %r)' % (self.__class__.__id__, self.program_code, self.id)
+         return '(%r, %r)' % (self.order_number, self.id)
