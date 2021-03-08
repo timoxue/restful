@@ -27,8 +27,14 @@ api.add_resource(ProgramList, '/programs')
 api.add_resource(Program, '/program/<string:task_id>')
 
 api.add_resource(InstoreList, '/instores')
+api.add_resource(Instore, '/instore/<id>')
+
 
 api.add_resource(File, '/files')
+
+
+                                               
+
 
 if __name__ == '__main__':
     app.run(debug=False)

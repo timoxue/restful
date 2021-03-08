@@ -4,6 +4,8 @@ from models.program import Program as ProgramModel
 from models.project import Project as ProjectModel
 from models.instore import Instore as InstoreModel
 from models import Combined
+from models.db import app
+
 from models.db import db
 from router.Status import Success, NotFound
 from flask_jwt import JWT, jwt_required, current_identity
@@ -49,3 +51,17 @@ class InstoreList(Resource):
         instore = instore.from_dict(request.json)
         db.session.commit()
         return Success.message, Success.code
+
+@app.route('/confirmInstore/<program_code>')
+def getConfirm(program_code):
+    u = InstoreModel.query.filter(program_code==program_code).all()
+    result =  [data.to_dict() for data in u]
+    return {'data': result}
+    
+@app.route('/confirmInstore/<id>/<program_code>')
+def confirmStore(id,program_code):
+    inStore = InstoreModel(id=id, program_code=program_code)
+    inStore['is_status'] = 1
+    db.session.add(inStore)
+    db.session.commit()
+    return 'Add %s user successfully' % program_code

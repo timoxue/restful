@@ -12,19 +12,22 @@ from sqlalchemy.sql import func
 
 
 class Program(Resource):
-    #@jwt_required()
+    # @jwt_required()
     def get(self, task_id):
-        #print(current_identity)
-        joined_table = db.session.query(ProgramModel, ProjectModel,func.sum(InstoreModel.is_num).label('sum')).outerjoin(ProjectModel).outerjoin(InstoreModel,InstoreModel.program_code == ProgramModel.program_code).filter(ProgramModel.task_id==task_id).group_by(ProgramModel, ProjectModel).all()
-        print(type(joined_table[0]))
-        data = [dict(zip(result.keys(), result)) for result in joined_table]
+        # print(current_identity)
+        #joined_table = db.session.query(ProgramModel, ProjectModel,func.sum(InstoreModel.is_num-InstoreModel.in_store_num).label('w_sum')).outerjoin(ProjectModel).outerjoin(InstoreModel,InstoreModel.program_code == ProgramModel.program_code).filter(ProgramModel.task_id==task_id).group_by(ProgramModel, ProjectModel)
+        # print(joined_table)
+        #data = [dict(zip(result.keys(), result)) for result in joined_table]
+        # print(data)
+        #result = Combined(ProgramModel, ProjectModel,{"sum":0}).exclude(['id'], ['id']).to_dict(joined_table)
+        # sql =
+        data = db.session.execute(
+             'SELECT * FROM PROGRAM_VIEW WHERE TASK_ID = (:id)', {"id":task_id}
+        ).fetchone()
         print(data)
-        result = Combined(ProgramModel, ProjectModel,{"sum":0}).exclude(['id'], ['id']).to_dict(joined_table)
-        
-        
-        
-        if data:
-            return data
+        result = dict(zip(data.keys(), data))
+        if result:
+            return result
         return NotFound.message, NotFound.code
 
     def delete(self, task_id):
@@ -37,28 +40,29 @@ class Program(Resource):
 class ProgramList(Resource):
 
     def get(self):
-        instore_table = db.session.query(InstoreModel.program_code,func.sum(InstoreModel.is_num).label('sum')).group_by(InstoreModel.program_code).all()
-        print (type(instore_table))
-        data = [dict(zip(result.keys(), result)) for result in instore_table]
+        #instore_table = db.session.query(InstoreModel.program_code,func.sum(InstoreModel.is_num).label('sum')).group_by(InstoreModel.program_code).all()
+        #print (type(instore_table))
+        #data = [dict(zip(result.keys(), result)) for result in instore_table]
 
-        joined_table = db.session.query(ProgramModel,func.sum(InstoreModel.is_num).label('sum')).outerjoin(InstoreModel,InstoreModel.program_code == ProgramModel.program_code).group_by(ProgramModel).all()
+        #joined_table = db.session.query(ProgramModel, func.sum(InstoreModel.is_num-InstoreModel.in_store_num).label(
+            #'w_sum')).outerjoin(InstoreModel, InstoreModel.program_code == ProgramModel.program_code).group_by(ProgramModel).all()
         #joined_table = joined_table.query()
-        print(type(joined_table))
-        #test1
-        result = Combined(ProgramModel,InstoreModel.is_num).to_dict(joined_table)
-      
-        print (result)
-        #result = [program.to_dict() for program in programs]
-        #if programs:
-            #return {'data': result}
-        
-        # for user in users:
-        #     for k in list(user.keys()):
-        #         #print (k)
-        #         if(k == 'is_delete' or k == 'u_password'):
-        #             del user[k]
-        
-        return {'data': data}
+        #print((joined_table))
+        # test1
+        # result = Combined(
+        #     ProgramModel, InstoreModel.is_num).to_dict(joined_table)
+        data = db.session.execute(
+             'SELECT * FROM PROGRAM_VIEW '
+        ).fetchall()
+        print(data)
+        results = [dict(zip(result.keys(), result)) for result in data]
+
+        # if programs:
+        return {'data': results}
+
+
+
+       
 
     def post(self):
         # print(json.load(request.json))

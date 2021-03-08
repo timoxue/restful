@@ -22,4 +22,4 @@ class Instore(db.Model, Serializrable):
     check_form_path = db.Column(db.String(120),nullable = False)
 
     def __repr__(self):
-        return '<Instore %r>' % self.id
+         return '%s (%r, %r)' % (self.__class__.__id__, self.program_code, self.id)

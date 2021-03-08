@@ -29,11 +29,7 @@ class ProjectList(Resource):
         username = current_identity.to_dict()['username']
         print (username)
         projects = [project.to_dict() for project in ProjectModel.query.filter(ProjectModel.create_name == username).all()]
-        # for user in users:
-        #     for k in list(user.keys()):
-        #         #print (k)
-        #         if(k == 'is_delete' or k == 'u_password'):  
-        #             del user[k]
+     
         return {'data':projects}
         #return {'data': [user.to_dict() for user in ProjectModel.query.filter_by(is_delete = False).all()]}
     
