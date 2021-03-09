@@ -3,13 +3,16 @@ from flask import Flask, jsonify, abort, request
 from models.program import Program as ProgramModel
 from models.project import Project as ProjectModel
 from models.instore import Instore as InstoreModel
+from models.db import app
 
 from models import Combined
 from models.db import db
 from router.Status import Success, NotFound
 from flask_jwt import JWT, jwt_required, current_identity
 from sqlalchemy.sql import func
-
+import json
+import datetime
+from models.db import app
 
 class Program(Resource):
     # @jwt_required()
@@ -36,6 +39,15 @@ class Program(Resource):
         db.session.commit()
         return Success.message, Success.code
 
+class DateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            return json.JSONEncoder.default(self, obj)
+
+
+
 
 class ProgramList(Resource):
 
@@ -56,10 +68,10 @@ class ProgramList(Resource):
         ).fetchall()
         
         results = [dict(zip(result.keys(), result)) for result in data]
-        print(results)
-        # if programs:
        
-        return {'data': results}
+        str = json.dumps(results, cls=DateEncoder)
+        result = json.loads(str)
+        return {'data': result}
 
 
 
