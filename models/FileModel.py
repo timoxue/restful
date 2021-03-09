@@ -6,7 +6,7 @@ import datetime
 
 class FileModel(db.Model, Serializrable):
     __tablename__ = 'files' 
-    id = db.Column(db.Integer, db.Sequence('id_seq'), primary_key=True)
+    id = db.Column(db.Integer, db.Sequence('id_seq'), primary_key=True, autoincrement=True)
     f_filename = db.Column(db.String(80), unique=True, nullable=False)
     f_id = db.Column(db.String(32),unique = True,nullable = False)
     f_location = db.Column(db.String(256),unique = True,nullable = False)
@@ -16,4 +16,4 @@ class FileModel(db.Model, Serializrable):
     is_delete = db.Column(db.Boolean())
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<File %r>' % self.f_filename
