@@ -1,6 +1,7 @@
 from db import db
 from models import Serializrable
 from models.program import Program as Program
+import datetime
 
 
 class Project(db.Model, Serializrable):
@@ -11,7 +12,7 @@ class Project(db.Model, Serializrable):
     res_name = db.Column(db.String(80),nullable = False)  
     create_name = db.Column(db.String(80),nullable = False)  
     finish_time = db.Column(db.String(8),nullable=False)
-    create_time = db.Column(db.String(8),nullable=False)
+    create_time = db.Column(db.DateTime, default=datetime.datetime.now)
     company = db.Column(db.String(80),nullable = False) 
     category = db.Column(db.String(80)) 
     postcode = db.Column(db.String(80))

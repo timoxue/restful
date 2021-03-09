@@ -24,7 +24,7 @@ class Program(Resource):
         data = db.session.execute(
              'SELECT * FROM PROGRAM_VIEW WHERE TASK_ID = (:id)', {"id":task_id}
         ).fetchone()
-        print(data)
+        #print(data)
         result = dict(zip(data.keys(), data))
         if result:
             return result

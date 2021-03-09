@@ -3,6 +3,9 @@ from models.user import User as UserModel
 from models.project import Project as ProjectModel
 from models.program import Program as ProgramModel
 from models.instore import Instore as InstoreModel
+from models.Incident  import Incident as IncidentModel
+from models.Process import Process as ProcessModel
+from models.Component import Component as ComponentModel
 
 from models.Test import People as PeopleModel
 from models.Test import Address as AddressModel
