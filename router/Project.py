@@ -4,6 +4,7 @@ from models.project import Project as ProjectModel
 from models.db import db
 from router.Status import Success, NotFound
 from flask_jwt import JWT, jwt_required, current_identity
+from models.db import app
 
 
 class Project(Resource):
@@ -49,3 +50,16 @@ class ProjectList(Resource):
         db.session.commit()
         return Success.message, Success.code
 
+@app.route('/getProjects')
+@jwt_required()
+def getProjects():
+    username = current_identity.to_dict()['username']
+    projects = [data.to_dict() for data in ProjectModel.query.filter_by(res_name=username).all()]
+    data = []
+    obj = {}
+    for r in projects:
+        obj = {}
+        obj['key'] = r['id']
+        obj['value'] = r['pro_name']
+        data.append(obj)
+    return {'data': data}

@@ -11,7 +11,7 @@ class Component(db.Model, Serializrable):
     original_id = db.Column(db.String(80))
     #component_id = db.Column(db.Integer, db.Sequence('id_seq'))
     #试验件名称
-    component_name = db.Column(db.String(20), unique=True, nullable=False)
+    component_name = db.Column(db.String(20), unique=True)
     #试验件编码
     component_unique_id = db.Column(db.String(80), unique=True, nullable=False)
     #工单id
@@ -19,7 +19,7 @@ class Component(db.Model, Serializrable):
     #工序id
     process_id = db.Column(db.Integer)
     #试验件状态 0:待入库 1: 确认入库 
-    component_status = db.Column(db.Integer, nullable=False) 
+    component_status = db.Column(db.Integer,default=0) 
     #试验件状态1  0:带分配 1 已分配 2: 实验结束
     component_status1 = db.Column(db.Integer)
     #实验负责人
