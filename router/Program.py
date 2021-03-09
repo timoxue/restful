@@ -54,10 +54,11 @@ class ProgramList(Resource):
         data = db.session.execute(
              'SELECT * FROM PROGRAM_VIEW '
         ).fetchall()
-        print(data)
+        
         results = [dict(zip(result.keys(), result)) for result in data]
-
+        print(results)
         # if programs:
+       
         return {'data': results}
 
 

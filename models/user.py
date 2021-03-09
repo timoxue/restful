@@ -1,5 +1,6 @@
 from db import db
 from models import Serializrable
+import datetime
 
 class User(db.Model, Serializrable):
     __tablename__ = 'users' 
@@ -9,6 +10,7 @@ class User(db.Model, Serializrable):
     u_id = db.Column(db.String(32),unique = True,nullable = False)  
     u_password = db.Column(db.String(32),nullable = False) 
     u_authority = db.Column(db.String(256),nullable = False)
+    u_createtime = db.Column(db.DateTime, default=datetime.datetime.now)
     u_department = db.Column(db.String(32),nullable = False)
     u_name = db.Column(db.String(256),nullable = False)  
     u_tele = db.Column(db.String(256),nullable = False)  

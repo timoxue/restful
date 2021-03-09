@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from db import db
 from models import Serializrable
 from models.program import Program as Program
