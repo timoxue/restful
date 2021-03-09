@@ -35,7 +35,7 @@ class Process(db.Model, Serializrable):
     #工序负责人
     process_owner = db.Column(db.Integer, nullable=False)
     #实验员
-    experimenter = db.Column(db.Integer, nullable=False)
+    experimenter = db.Column(db.Integer)
     #步骤
     step_number = db.Column(db.Integer, nullable=False)
     #实验单id

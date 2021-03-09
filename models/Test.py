@@ -11,7 +11,7 @@ class People(db.Model, Serializrable):
         return '<People %r.%r>' % (self.username, self.real_title)
 
 class Address(db.Model, Serializrable):   
-    id = db.Column(db.Integer, db.Sequence('id_seq'), primary_key=True)
+    id = db.Column(db.Integer, db.Sequence('id_seq'), primary_key=True, autoincrement=True)
     username = db.Column(db.String(80),  db.ForeignKey('people.username')) 
     address = db.Column(db.String(120),  nullable=False)
 
