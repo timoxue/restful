@@ -5,6 +5,7 @@ from router.User import UserList, User
 from router.Project import Project, ProjectList
 from router.Program import Program, ProgramList
 from router.InStore import Instore,InstoreList
+from router.Component import Component
 
 from router.File import File
 from models.db import app
@@ -29,6 +30,7 @@ api.add_resource(Program, '/program/<string:task_id>')
 
 api.add_resource(InstoreList, '/instores')
 api.add_resource(Instore, '/instore/<id>')
+api.add_resource(Component, '/components')
 
 
 api.add_resource(File, '/files')
