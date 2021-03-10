@@ -8,7 +8,8 @@ class Incident(db.Model, Serializrable):
     __tablename__ = 'incidents' 
     #工单ID
     incident_id = db.Column(db.Integer, db.Sequence('id_seq'), primary_key=True, autoincrement=True)
-    
+    #创建工单账号
+    create_name = db.Column(db.String(80), nullable=False)
     #委托单号
     order_number = db.Column(db.String(80), nullable=False)
     #检测项目
