@@ -56,8 +56,9 @@ class InstoreList(Resource):
 
 @app.route('/confirmInstore/<order_number>')
 def getConfirm(order_number):
-    u = InstoreModel.query.filter(
-        order_number == order_number, InstoreModel.is_status == 0).all()
+
+    u = db.session.query(InstoreModel).filter(
+        InstoreModel.order_number == order_number).filter(InstoreModel.is_status == 0).all()
     result = [data.to_dict() for data in u]
     return {'data': result}
 

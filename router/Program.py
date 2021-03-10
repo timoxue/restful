@@ -92,3 +92,17 @@ class ProgramList(Resource):
         program = program.from_dict(request.json)
         db.session.commit()
         return Success.message, Success.code
+
+@app.route('/selectPrograms')
+def programsParameters():
+    programs = [data.to_dict() for data in ProgramModel.query.all()]
+    data = []
+    obj = {
+    }
+    for r in programs:
+        obj = {}
+        obj['order_number'] = r['order_number']
+        obj['program_code'] = r['program_code']
+        data.append(obj)
+      
+    return {'data': data}
