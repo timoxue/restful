@@ -27,12 +27,7 @@ class Experiment(Resource):
         # db.session.add(experi4)
         # db.session.add(experi5)
         # db.session.commit()
-        experi_type = request.json['type']
-        experiments = ExperimentModel.query.filter_by(experi_type=experi_type).order_by(ExperimentModel.experi_step).all()
         response_data = {}
-        process_list = [] 
-        response_data['type'] = experi_type
-        for x in experiments:
-            process_list.append(x.experiment_name)
-        response_data['process_list'] = process_list
+        experiments = ExperimentModel.query.all()
+        response_data['process_list'] = [ex.to_dict() for ex in experiments]
         return response_data, Success.code
