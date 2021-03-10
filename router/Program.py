@@ -81,7 +81,7 @@ class ProgramList(Resource):
         # print(json.load(request.json))
         program = ProgramModel()
         program = program.from_dict(request.json)
-
+        
         db.session.add(program)
         db.session.commit()
         return Success.message, Success.code

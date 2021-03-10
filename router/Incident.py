@@ -10,7 +10,7 @@ import datetime
 class Incident(Resource):
     def post(self):
         req_data = request.json
-        #1. get process list and component_list
+      #1. get process list and component_list
         component_list = req_data['component_list']
         process_list = req_data['process_list']
         req_data['create_user'] = "test"

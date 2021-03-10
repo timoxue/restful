@@ -23,6 +23,7 @@ class Program(db.Model, Serializrable):
     task_name_book = db.Column(db.String(80))
     #委托单时间
     order_time = db.Column(db.String(8),nullable=False)
+    #备注
     remarks = db.Column(db.String(120))
     test_item = db.Column(db.String(80))
     contract_id = db.Column(db.String(80)) 
@@ -30,6 +31,7 @@ class Program(db.Model, Serializrable):
     sample_material = db.Column(db.String(80))
     sample_num = db.Column(db.String(80))
     create_time =  db.Column(db.DateTime, default=datetime.datetime.now)
-
+    #创建项目账号
+    #create_name = db.Column(db.String(80),nullable = False)
     def __repr__(self):
         return '<order_number %r>' % self.order_number
