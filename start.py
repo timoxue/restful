@@ -34,7 +34,7 @@ api.add_resource(InstoreList, '/instores')
 api.add_resource(Instore, '/instore/<id>')
 api.add_resource(Component, '/components')
 api.add_resource(Experiment, '/experiment')
-api.add_resource(Experiment, '/incident')
+#api.add_resource(Experiment, '/incident')
 
 api.add_resource(File, '/files')
 
