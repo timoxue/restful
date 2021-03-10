@@ -19,11 +19,11 @@ class Process(db.Model, Serializrable):
     #工序状态
     process_status = db.Column(db.Integer, nullable=False)
     #工序状态1（备用）
-    process_status1 = db.Column(db.Integer, nullable=False)
+    process_status1 = db.Column(db.Integer)
     #计划开始时间
-    start_time = db.Column(db.DateTime)
+    start_time_d = db.Column(db.Date)
     #计划结束时间
-    end_time = db.Column(db.DateTime)
+    end_time_d = db.Column(db.DateTime)
     #工时
     range_time = db.Column(db.Integer)
     #工序参数
@@ -31,11 +31,11 @@ class Process(db.Model, Serializrable):
     #工序备注
     process_notes = db.Column(db.String(80))
     #实验负责人
-    experiment_owner = db.Column(db.Integer, nullable=False)
+    experiment_owner = db.Column(db.String(20), nullable=False)
     #工序负责人
-    process_owner = db.Column(db.Integer, nullable=False)
+    process_owner = db.Column(db.String(20))
     #实验员
-    experimenter = db.Column(db.Integer)
+    experimenter = db.Column(db.String(20))
     #步骤
     step_number = db.Column(db.Integer, nullable=False)
     #实验单id

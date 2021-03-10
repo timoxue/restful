@@ -5,14 +5,15 @@ from models.Incident import Incident as IncidentModel
 from models.Component import Component as ComponentModel
 from models.db import db
 from router.Status import Success, NotFound
-
+import datetime
 
 class Incident(Resource):
     def post(self):
-        req_data = request.json()
+        req_data = request.json
         #1. get process list and component_list
         component_list = req_data['component_list']
         process_list = req_data['process_list']
+        req_data['create_user'] = "test"
 
         #2. get component list
 
@@ -30,7 +31,8 @@ class Incident(Resource):
         list_l = len(process_list)
         update_process_list = []
         for i in range(list_l):
-            process_list[i].incident_id = incident.incident_id
+            process_list[i]['incident_id'] = incident.incident_id
+            process_list[i]['process_status'] = 0
             p = ProcessModel().from_dict(process_list[i])
             db.session.add(p)
             db.session.commit()
@@ -44,17 +46,33 @@ class Incident(Resource):
             else:
                 update_process_list[i].pre_process_id = update_process_list[i-1].process_id
                 update_process_list[i].pos_process_id = update_process_list[i+1].process_id
-        db.session.execute(
-            ProcessModel.__table__.update(),
-            [p.to_dict() for p in update_process_list]
-        )
-        db.session.commit()
+
+        for i in range(list_l):
+            value = {}
+            value['process_id'] = update_process_list[i].process_id
+            if i == list_l-1:
+                value['pre_process_id'] = update_process_list[i-1].process_id
+                value['pos_process_id'] = None
+            elif i == 0:
+                value['pre_process_id'] = None
+                value['pos_process_id'] = update_process_list[i+1].process_id
+            else:
+                value['pre_process_id'] = update_process_list[i-1].process_id
+                value['pos_process_id'] = update_process_list[i+1].process_id
+            ProcessModel.query.filter(ProcessModel.process_id==value['process_id']).update({'pre_process_id': value['pre_process_id'],'pos_process_id': value['pos_process_id']})
+            db.session.commit()
 
         #6. update insert into Component table
-        for i, component in enumerate(component_list):
-            component[i].incident_id = incident.incident_id
+
+        for i, _ in enumerate(component_list):
+            component_list[i]['incident_id'] = incident.incident_id
+            component_list[i]['create_at'] = datetime.datetime.strptime(component_list[i]['create_at'].encode('utf-8'), '%Y-%m-%d %H:%M:%S')
+            #del component_list[i]['create_at']
+            del component_list[i]['update_at']
         db.session.execute(
             ComponentModel.__table__.insert(),
             component_list
         )
         db.session.commit()
+
+        return Success.message, Success.code

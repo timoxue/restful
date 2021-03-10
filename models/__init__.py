@@ -4,21 +4,27 @@ import collections
 class Serializrable(object):
     """A SQLAlchemy mixin class that can serialize itself as a JSON object"""
 
-    def to_dict(self):
+    def to_dict(self, update=False):
         """Return dict representation of class by iterating over database columns."""
         value = {}
         for column in self.__table__.columns:
             attribute = getattr(self, column.name)
-            if isinstance(attribute, datetime.datetime):
+            if isinstance(attribute, datetime.datetime) and not update:
                 attribute = str(attribute)
-            value[column.name] = attribute
+            if attribute not in ['create_at', 'update_at']:
+                value[column.name] = attribute
         return value
 
     def from_dict(self, attributes):
         """Update the current instance base on attribute->value by *attributes*"""
         for attribute in attributes:
             #print(attribute)
-            setattr(self, attribute, attributes[attribute])
+            if attribute.encode('utf-8').endswith("_time_d"):
+                convert_datetime = datetime.datetime.strptime(attributes[attribute].encode('utf-8'), '%Y%m%d')
+                setattr(self, attribute, convert_datetime)
+            else:
+                setattr(self, attribute, attributes[attribute])
+            #print(getattr(self, attribute))
         return self
 
     def add_attr(self, k, v):
@@ -80,4 +86,4 @@ class Combined:
                 #return [dict(zip(result.keys(), result)) for result in results]
             final.append(value)
         #print(value)
-        return final
+        return final 
