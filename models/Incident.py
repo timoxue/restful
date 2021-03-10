@@ -18,7 +18,7 @@ class Incident(db.Model, Serializrable):
     #派工类型
     experi_type = db.Column(db.String(20))
     #派工id
-    experi_type_id = db.Column(db.Integer)
+    #experi_type_id = db.Column(db.Integer)
     create_at = db.Column(db.DateTime, default=datetime.datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     

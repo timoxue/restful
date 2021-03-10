@@ -6,11 +6,11 @@ from models.instore import Instore as InstoreModel
 from models.Incident  import Incident as IncidentModel
 from models.Process import Process as ProcessModel
 from models.Component import Component as ComponentModel
+from models.Experiment import Experiment as ExperimentModel
 
 from models.Test import People as PeopleModel
 from models.Test import Address as AddressModel
 from models import Combined
-from sqlalchemy.orm import with_polymorphic
 
 
 
@@ -25,13 +25,19 @@ if __name__ == '__main__':
         admin = UserModel(username='admin', u_email='admin@example.com', u_id="123", u_name='what', u_password='123', u_tele = "13888888888", u_authority="jingli", u_department="admin", is_delete=False)
         test_admin = PeopleModel(username='admin', real_title="Manager")
         test_addr= AddressModel(username='admin', address='123')
-        test_addr1= AddressModel(username='admin', address='456')
+        #test_addr1= AddressModel(username='admin', address='456')
+        #add_list = [{"username": 'admin', "address": "123"}, {"username": 'admin',  "address": "456"}]
         #guest = UserModel(username='guest', email='guest@example.com')
-        db.session.add(admin)
         db.session.add(test_admin)
         db.session.add(test_addr)
-        db.session.add(test_addr1)
+        #db.session.bulk_insert_mappings(AddressModel, add_list)
+        # db.session.execute(
+        #     AddressModel.__table__.insert(),
+        #     add_list
+        # )
         db.session.commit()
+        print(test_addr.id)
+
     elif command == 'clean':
         #db.metadata.clear()
         db.drop_all()

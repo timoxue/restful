@@ -5,13 +5,13 @@ from models import Serializrable
 import datetime
 
 class Experiment(db.Model, Serializrable):
-    __tablename__ = 'experients' 
+    __tablename__ = 'experiments' 
     #工序模板id
     experiment_id = db.Column(db.Integer, db.Sequence('id_seq'), primary_key=True, autoincrement=True)
     #工序模板名称
-    experiment_name = db.Column(db.String(20), nullable=False)
-    #派工类型ID
-    experi_type_id = db.Column(db.Integer)
+    experiment_name = db.Column(db.String(20),nullable=False)
+    #派工Step
+    experi_step = db.Column(db.Integer)
     #派工类型名称
     experi_type = db.Column(db.String(20), nullable=False)
 
