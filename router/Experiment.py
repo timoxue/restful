@@ -28,6 +28,9 @@ class Experiment(Resource):
         # db.session.add(experi5)
         # db.session.commit()
         response_data = {}
-        experiments = ExperimentModel.query.all()
-        response_data['process_list'] = [ex.to_dict() for ex in experiments]
+        experiments = ExperimentModel.query.order_by(ExperimentModel.experi_type, ExperimentModel.experi_step).all()
+        for ex in experiments:
+            if ex.experi_type not in response_data.keys():
+                response_data[ex.experi_type] = []
+            response_data[ex.experi_type].append(ex.experiment_name)
         return response_data, Success.code
