@@ -32,5 +32,5 @@ class Experiment(Resource):
         for ex in experiments:
             if ex.experi_type not in response_data.keys():
                 response_data[ex.experi_type] = []
-            response_data[ex.experi_type].append(ex.experiment_name)
+            response_data[ex.experi_type].append(ex.to_dict())
         return response_data, Success.code
