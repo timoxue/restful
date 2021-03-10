@@ -4,3 +4,4 @@ router/*.pyc
 config/connection.conf
 config/connection.conf
 config/connection.conf
+sql/*.~sql
