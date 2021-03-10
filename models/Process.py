@@ -21,15 +21,9 @@ class Process(db.Model, Serializrable):
     #工序状态1（备用）
     process_status1 = db.Column(db.Integer)
     #计划开始时间
-<<<<<<< HEAD
     start_time_d = db.Column(db.Date)
     #计划结束时间
     end_time_d = db.Column(db.DateTime)
-=======
-    start_time = db.Column(db.String(8))
-    #计划结束时间
-    end_time = db.Column(db.String(8))
->>>>>>> 4a524f44f1928cd55efd6df7716b712a8ab7375b
     #工时
     range_time = db.Column(db.Integer)
     #工序参数
