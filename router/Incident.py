@@ -8,7 +8,6 @@ from router.Status import Success, NotFound
 import datetime
 
 class Incident(Resource):
-    get
     def post(self):
         req_data = request.json
 
