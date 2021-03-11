@@ -92,7 +92,7 @@ class Incident(Resource):
         return Success.message, Success.code
 
 class IncidentList(Resource):
-    def get(self, process_status):
+    def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('process_status', type=int)
         args = parser.parse_args()
