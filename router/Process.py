@@ -4,6 +4,7 @@ from models.Process import Process as ProcessModel
 from models.Incident import Incident as IncidentModel
 from models.Component import Component as ComponentModel
 from models.program import Program as ProgramModel
+from models.project import Project as ProjectModel
 from models.db import db
 from models.db import app
 
@@ -17,8 +18,11 @@ class ProcessList(Resource):
         args = parser.parse_args()
         results = ProcessModel.query.filter(ProcessModel.process_status==args['process_status']).join(IncidentModel, IncidentModel.incident_id==ProcessModel.incident_id). \
         join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number).\
-        with_entities(ProgramModel.pro_name, IncidentModel.incident_id, IncidentModel.create_name,IncidentModel.order_number, IncidentModel.experi_project, IncidentModel.experi_type,
-            ProcessModel.process_name, ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
+        join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
+        with_entities(ProgramModel.pro_name, ProgramModel.pro_id,
+                ProjectModel.finish_time,
+                IncidentModel.incident_id, IncidentModel.create_name,IncidentModel.order_number, IncidentModel.experi_project, IncidentModel.experi_type,
+                ProcessModel.process_name, ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
         #incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
 
         response_data = [dict(zip(result.keys(), result)) for result in results]
