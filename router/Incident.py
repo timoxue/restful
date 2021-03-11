@@ -97,19 +97,6 @@ class Incident(Resource):
 
 
 
-@app.route('/getOverviewStatus')
-def overviewStatus():
-    allIncident = ProcessModel.query.count()
-    finishIncident = ProcessModel.query.filter(ProcessModel.process_status == 3).count()
-    assginIncident = ProcessModel.query.filter(ProcessModel.process_status == 1).count()
-    processIncident = ProcessModel.query.filter(ProcessModel.process_status == 2).count()
-    data = {
-        "allIncident":allIncident,
-        "finishIncident":finishIncident,
-        "assginIncident":assginIncident,
-        "processIncident":processIncident
-    }
-    return data
 
 
 class IncidentList(Resource):

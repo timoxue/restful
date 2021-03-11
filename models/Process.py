@@ -30,7 +30,7 @@ class Process(db.Model, Serializrable):
     process_parameters = db.Column(db.String(80))
     #工序备注
     process_notes = db.Column(db.String(80))
-    #实验负责人
+    #实验负责人 = incident_create_name
     experiment_owner = db.Column(db.String(20), nullable=False)
     #工序负责人
     process_owner = db.Column(db.String(20))
