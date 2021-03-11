@@ -8,6 +8,7 @@ from router.Status import Success, NotFound
 import datetime
 
 class Incident(Resource):
+    get
     def post(self):
         req_data = request.json
 
@@ -34,7 +35,11 @@ class Incident(Resource):
         update_process_list = []
         for i in range(list_l):
             process_list[i]['incident_id'] = incident.incident_id
-            process_list[i]['process_status'] = 0
+            if process_list[i]['step_number'] == 0:
+                #第一个工序的状态默认为待分配
+                process_list[i]['process_status'] = 1
+            else:
+                process_list[i]['process_status'] = 0
             p = ProcessModel().from_dict(process_list[i])
             db.session.add(p)
             db.session.commit()
