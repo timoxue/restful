@@ -16,7 +16,13 @@ class ProcessList(Resource):
         with_entities(IncidentModel.incident_id, IncidentModel.create_name,IncidentModel.order_number, IncidentModel.experi_project, IncidentModel.experi_type,
             ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
         #incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
-        return {'data':[dict(zip(result.keys(), result)) for result in results]}
+
+        response_data = [dict(zip(result.keys(), result)) for result in results]
+        for entity in response_data:
+                entity['start_time_d'] = datetime.datetime.strftime(entity['start_time_d'], '%Y-%m-%d %H:%M:%S')
+                entity['end_time_d'] = datetime.datetime.strftime(entity['end_time_d'], '%Y-%m-%d %H:%M:%S')
+  
+        return {'data':response_data}
 
 class ProcessStatus(Resource):
     def post(self):
