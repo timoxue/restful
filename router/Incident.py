@@ -113,7 +113,7 @@ def overviewStatus():
 
 
 class IncidentList(Resource):
-    def get(self, process_status):
+    def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('process_status', type=int)
         args = parser.parse_args()
