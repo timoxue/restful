@@ -8,6 +8,7 @@ from router.InStore import Instore,InstoreList
 from router.Component import Component
 from router.Experiment import Experiment
 from router.Incident import Incident
+from router.Incident import IncidentList
 
 from router.File import File
 from models.db import app
@@ -35,6 +36,7 @@ api.add_resource(Instore, '/instore/<id>')
 api.add_resource(Component, '/components')
 api.add_resource(Experiment, '/experiment')
 api.add_resource(Incident, '/incident')
+api.add_resource(IncidentList, '/get_incidents')
 
 api.add_resource(File, '/files')
 
