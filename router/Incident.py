@@ -67,14 +67,18 @@ class Incident(Resource):
         #6. update insert into Component table
 
         for i, _ in enumerate(component_list):
-            component_list[i]['incident_id'] = incident.incident_id
-            component_list[i]['create_at'] = datetime.datetime.strptime(component_list[i]['create_at'].encode('utf-8'), '%Y-%m-%d %H:%M:%S')
+            value = {}
+            #value['id'] = component_list[i]['id']
+            value['incident_id'] = incident.incident_id
+            value['create_at'] = datetime.datetime.strptime(component_list[i]['create_at'].encode('utf-8'), '%Y-%m-%d %H:%M:%S')
+            value['order_number'] = component_list[i]['order_number']
+            value['original_id'] = component_list[i]['original_id']
+            value['component_status'] = component_list[i]['component_status']
+            value['component_status1'] = component_list[i]['component_status1']
+            value['component_unique_id'] = component_list[i]['component_unique_id']
             #del component_list[i]['create_at']
-            del component_list[i]['update_at']
-        db.session.execute(
-            ComponentModel.__table__.insert(),
-            component_list
-        )
-        db.session.commit()
+            #del component_list[i]['update_at']
+            ComponentModel.query.filter(ComponentModel.id==component_list[i]['id']).update(value)
+            db.session.commit()
 
         return Success.message, Success.code
