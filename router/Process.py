@@ -12,7 +12,8 @@ class ProcessList(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('process_status', type=int)
         args = parser.parse_args()
-        results = ProcessModel.query.filter_by(ProcessModel.process_status==args['process_status']).join(IncidentModel, IncidentModel.incident_id==ProcessModel.incident_id). \
+        print(args)
+        results = ProcessModel.query.filter(ProcessModel.process_status==args['process_status']).join(IncidentModel, IncidentModel.incident_id==ProcessModel.incident_id). \
         with_entities(IncidentModel.incident_id, IncidentModel.create_name,IncidentModel.order_number, IncidentModel.experi_project, IncidentModel.experi_type,
             ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
         #incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
