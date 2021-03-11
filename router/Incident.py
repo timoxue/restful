@@ -8,6 +8,10 @@ from router.Status import Success, NotFound
 import datetime
 
 class Incident(Resource):
+    def get(self):
+        result = [incident.to_dict() for incident in IncidentModel.query.all()]
+        return {'data': result}
+
     def post(self):
         req_data = request.json
 
@@ -86,3 +90,11 @@ class Incident(Resource):
             db.session.commit()
 
         return Success.message, Success.code
+
+class IncidentList(Resource):
+    def get(self, process_status):
+        parser = reqparse.RequestParser()
+        parser.add_argument('process_status', type=int)
+        args = parser.parse_args()
+        incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
+        return {'data':incidents}
