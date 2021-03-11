@@ -4,6 +4,8 @@ from models.Process import Process as ProcessModel
 from models.Incident import Incident as IncidentModel
 from models.Component import Component as ComponentModel
 from models.db import db
+from models.db import app
+
 from router.Status import Success, NotFound
 import datetime
 
@@ -82,3 +84,18 @@ class Incident(Resource):
             db.session.commit()
 
         return Success.message, Success.code
+
+
+@app.route('/getOverviewStatus')
+def overviewStatus():
+    allIncident = ProcessModel.query.count()
+    finishIncident = ProcessModel.query.filter(ProcessModel.process_status == 3).count()
+    assginIncident = ProcessModel.query.filter(ProcessModel.process_status == 1).count()
+    processIncident = ProcessModel.query.filter(ProcessModel.process_status == 2).count()
+    data = {
+        "allIncident":allIncident,
+        "finishIncident":finishIncident,
+        "assginIncident":assginIncident,
+        "processIncident":processIncident
+    }
+    return data
