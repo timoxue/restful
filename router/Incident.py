@@ -1,3 +1,5 @@
+# encoding:UTF-8 
+
 from flask_restful import Resource, Api, reqparse
 from flask import Flask, jsonify, abort, request
 from models.Process import Process as ProcessModel
