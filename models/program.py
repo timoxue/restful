@@ -32,6 +32,6 @@ class Program(db.Model, Serializrable):
     sample_num = db.Column(db.String(80))
     create_time =  db.Column(db.DateTime, default=datetime.datetime.now)
     #创建项目账号
-    #create_name = db.Column(db.String(80),nullable = False)
+    create_name = db.Column(db.String(80))
     def __repr__(self):
         return '<order_number %r>' % self.order_number

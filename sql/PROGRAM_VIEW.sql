@@ -11,7 +11,7 @@ b.res_name, b.create_name
 b.company , b.category, b.postcode , 
 b.contact , b.tele_phone, b.u_email , b.address,
 sum(c.in_store_num) as in_store_num 
-FROM program a  JOIN project b ON b.id = a.pro_id
+FROM program a RIGHT JOIN project b ON b.id = a.pro_id
 
 FULL OUTER JOIN instore c ON c.order_number = a.order_number
 
@@ -70,5 +70,5 @@ SELECT a.pro_name,
          a.u_email,
          a.address,
          a.in_store_num,b.in_experiment,b.is_finish from PROGRAM_INSTORE_VIEW a
-         JOIN PROGRAM_COMPONENT_VIEW b ON b.order_number = a.order_number 
+        FULL OUTER JOIN PROGRAM_COMPONENT_VIEW b ON b.order_number = a.order_number 
 

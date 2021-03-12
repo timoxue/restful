@@ -10,6 +10,7 @@ from models.project import Project as ProjectModel
 from models.db import db
 from models.db import app
 from sqlalchemy import or_
+from flask_jwt import JWT, jwt_required, current_identity
 
 
 from router.Status import Success, NotFound
@@ -20,10 +21,12 @@ class Incident(Resource):
         result = [incident.to_dict() for incident in IncidentModel.query.all()]
         return {'data': result}
 
+    @jwt_required()
     def post(self):
+        username = current_identity.to_dict()['username']
         req_data = request.json
 
-        req_data['create_name'] = 'test'
+        req_data['create_name'] = username
       #1. get process list and component_list
         component_list = req_data['component_list']
         process_list = req_data['process_list']
@@ -90,7 +93,8 @@ class Incident(Resource):
             value['order_number'] = component_list[i]['order_number']
             value['original_id'] = component_list[i]['original_id']
             value['component_status'] = component_list[i]['component_status']
-            value['component_status1'] = component_list[i]['component_status1']
+            #更改试验件的状态 变更为已分配
+            value['component_status1'] = 1
             value['component_unique_id'] = component_list[i]['component_unique_id']
             #del component_list[i]['create_at']
             #del component_list[i]['update_at']

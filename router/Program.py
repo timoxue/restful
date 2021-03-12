@@ -15,7 +15,7 @@ import datetime
 from models.db import app
 
 class Program(Resource):
-    # @jwt_required()
+    #@jwt_required()
     def get(self, task_id):
         # print(current_identity)
         #joined_table = db.session.query(ProgramModel, ProjectModel,func.sum(InstoreModel.is_num-InstoreModel.in_store_num).label('w_sum')).outerjoin(ProjectModel).outerjoin(InstoreModel,InstoreModel.program_code == ProgramModel.program_code).filter(ProgramModel.task_id==task_id).group_by(ProgramModel, ProjectModel)
@@ -50,8 +50,9 @@ class DateEncoder(json.JSONEncoder):
 
 
 class ProgramList(Resource):
-
+    @jwt_required()
     def get(self):
+        username = current_identity.to_dict()['username']
         #instore_table = db.session.query(InstoreModel.program_code,func.sum(InstoreModel.is_num).label('sum')).group_by(InstoreModel.program_code).all()
         #print (type(instore_table))
         #data = [dict(zip(result.keys(), result)) for result in instore_table]
@@ -64,7 +65,7 @@ class ProgramList(Resource):
         # result = Combined(
         #     ProgramModel, InstoreModel.is_num).to_dict(joined_table)
         data = db.session.execute(
-             'SELECT * FROM PROGRAM_VIEW '
+             'SELECT * FROM PROGRAM_VIEW WHERE RES_NAME = (:USER)', {"USER":username}
         ).fetchall()
         
         results = [dict(zip(result.keys(), result)) for result in data]
@@ -76,12 +77,14 @@ class ProgramList(Resource):
 
 
        
-
+    @jwt_required()
     def post(self):
+    
         # print(json.load(request.json))
+        username = current_identity.to_dict()['username']
         program = ProgramModel()
         program = program.from_dict(request.json)
-        
+        program.create_name = username
         db.session.add(program)
         db.session.commit()
         return Success.message, Success.code
