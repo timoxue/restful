@@ -4,6 +4,8 @@ from flask import Flask, jsonify, abort, request
 from models.program import Program as ProgramModel
 from models.project import Project as ProjectModel
 from models.instore import Instore as InstoreModel
+from router.Message import MessageList
+
 from models import Combined
 from models.db import app
 
@@ -44,6 +46,11 @@ class InstoreList(Resource):
 
         db.session.add(instore)
         db.session.commit()
+        #新建入库申请
+        data = db.session.query(ProgramModel.create_name).join(InstoreModel,InstoreModel.order_number == ProgramModel.order_number).first()
+        data = dict(zip(data.keys(), data))
+        print (data)
+        MessageList().newMeassge("InStore",0,instore.create_name,data['create_name'])
         return Success.message, Success.code
 
     def put(self):

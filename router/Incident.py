@@ -41,6 +41,8 @@ class Incident(Resource):
         #4. insert into incident table 
         incident = IncidentModel()
         incident = incident.from_dict(req_data)
+        #更改incident状态为已创建
+        incident.incident_status = 0
         db.session.add(incident)
         db.session.commit()
 

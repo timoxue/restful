@@ -7,6 +7,7 @@ from models.Incident  import Incident as IncidentModel
 from models.Process import Process as ProcessModel
 from models.Component import Component as ComponentModel
 from models.Experiment import Experiment as ExperimentModel
+from models.Message import Message as MessageModel
 
 from models.Test import People as PeopleModel
 from models.Test import Address as AddressModel
