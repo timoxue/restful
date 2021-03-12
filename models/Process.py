@@ -16,7 +16,7 @@ class Process(db.Model, Serializrable):
     pos_process_id = db.Column(db.Integer)
     #工单id
     incident_id = db.Column(db.Integer, nullable=False) 
-    #工序状态
+    #工序状态 0:已创建 1:待分配 2:实验中 3:已完成
     process_status = db.Column(db.Integer, nullable=False)
     #工序状态1（备用）
     process_status1 = db.Column(db.Integer)

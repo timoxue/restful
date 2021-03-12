@@ -7,16 +7,25 @@ from models.program import Program as ProgramModel
 from models.project import Project as ProjectModel
 from models.db import db
 from models.db import app
+from flask_jwt import JWT, jwt_required, current_identity
 
 from router.Status import Success, NotFound
 import datetime
 
 class ProcessList(Resource):
+    @jwt_required()
     def get(self):
+        username = current_identity.to_dict()['username']
+        conditions = []
         parser = reqparse.RequestParser()
-        parser.add_argument('process_status', type=int)
+        role_type = parser.add_argument('role_type')
+        if role_type == 'process_owner':
+            conditions.append(ProcessModel.process_owner == username)
+        if role_type == "experimenter":
+            conditions.append(ProcessModel.experimenter == username)
+
         args = parser.parse_args()
-        results = ProcessModel.query.filter(ProcessModel.process_status==args['process_status']).join(IncidentModel, IncidentModel.incident_id==ProcessModel.incident_id). \
+        results = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status != 0).join(IncidentModel, IncidentModel.incident_id==ProcessModel.incident_id). \
         join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number).\
         join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
         with_entities(ProgramModel.pro_name, ProgramModel.pro_id,

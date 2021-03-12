@@ -5,8 +5,12 @@ from flask import Flask, jsonify, abort, request
 from models.Process import Process as ProcessModel
 from models.Incident import Incident as IncidentModel
 from models.Component import Component as ComponentModel
+from models.program import Program as ProgramModel
+from models.project import Project as ProjectModel
 from models.db import db
 from models.db import app
+from sqlalchemy import or_
+
 
 from router.Status import Success, NotFound
 import datetime
@@ -101,8 +105,37 @@ class Incident(Resource):
 
 class IncidentList(Resource):
     def get(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument('process_status', type=int)
-        args = parser.parse_args()
-        incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
-        return {'data':incidents}
+        # parser = reqparse.RequestParser()
+        # parser.add_argument('incident_status', type=int)
+        # args = parser.parse_args()
+        results = IncidentModel.query. \
+        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2)).\
+        join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number).\
+        join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
+        with_entities(ProgramModel.pro_name, ProgramModel.pro_id,
+                ProjectModel.finish_time,
+                IncidentModel.incident_id, IncidentModel.create_name, 
+                ProcessModel.process_id, ProcessModel.process_name, ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
+        #incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
+
+        response_data = [dict(zip(result.keys(), result)) for result in results]
+        for entity in response_data:
+                entity['start_time_d'] = datetime.datetime.strftime(entity['start_time_d'], '%Y-%m-%d %H:%M:%S')
+                entity['end_time_d'] = datetime.datetime.strftime(entity['end_time_d'], '%Y-%m-%d %H:%M:%S')
+  
+        return {'data':response_data}
+
+
+@app.route('/getOverviewIncStatus')
+def overviewIncidentStatus():
+    allIncident = IncidentModel.query.count()
+    finishIncident = IncidentModel.query.filter(IncidentModel.incident_status == 2).count()
+    unprocessIncident = IncidentModel.query.filter(IncidentModel.incident_status == 0).count()
+    processIncident = IncidentModel.query.filter(IncidentModel.incident_status == 1).count()
+    data = {
+        "allIncident":allIncident,
+        "finishIncident":finishIncident,
+        "processIncident":processIncident,
+        "unprocessIncident":unprocessIncident
+    }
+    return data
