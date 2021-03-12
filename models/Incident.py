@@ -20,6 +20,8 @@ class Incident(db.Model, Serializrable):
     experi_type = db.Column(db.String(20))
     #派工id
     #experi_type_id = db.Column(db.Integer)
+    #工单状态 = 0:创建，1：实验中,2:完成
+    incident_status = db.Column(db.Integer)
     create_at = db.Column(db.DateTime, default=datetime.datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     
