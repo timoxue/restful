@@ -11,6 +11,7 @@ from router.Incident import Incident,IncidentList
 from router.Process import ProcessStatus
 from router.Process import ProcessList
 from router.Message import MessageList
+from router.Component import ComponentList
 
 from router.File import File
 from models.db import app
@@ -44,6 +45,8 @@ api.add_resource(ProcessList, '/get_processes')
 api.add_resource(ProcessStatus, '/process_status')
 
 api.add_resource(MessageList,'/messageList')
+api.add_resource(ComponentList,'/componentList')
+
 
 api.add_resource(File, '/files')
 
