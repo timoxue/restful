@@ -46,7 +46,7 @@ api.add_resource(ProcessList, '/get_processes')
 api.add_resource(ProcessStatus, '/process_status')
 
 api.add_resource(MessageList,'/messageList')
-api.add_resource(ComponentList,'/componentList')
+api.add_resource(ComponentList,'/getAssignList')
 api.add_resource(CheckComponent, '/checkComponent')
 
 api.add_resource(File, '/files')

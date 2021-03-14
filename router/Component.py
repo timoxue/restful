@@ -38,42 +38,53 @@ class ComponentList(Resource):
         parser.add_argument('process_status', type=int)
         args = parser.parse_args()
         response_data = {}
-
+        print(args['process_status'])
         #1. Get current process
         dis_process = ProcessModel.query.filter(ProcessModel.process_id==args['process_id']) \
-                    .join(IncidentModel.incident_id==ProcessModel.incident_id) \
+                    .join(IncidentModel,IncidentModel.incident_id==ProcessModel.incident_id) \
                     .join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number) \
                     .join(ProjectModel, ProjectModel.id==ProgramModel.pro_id) \
-                    .with_entities(ProgramModel.pro_name, ProgramModel.pro_id,
+                    .with_entities(ProgramModel.pro_name, ProgramModel.pro_id,ProgramModel.order_number,ProgramModel.task_id,
                             ProjectModel.finish_time,
-                            IncidentModel.incident_id, IncidentModel.create_name, 
+                            IncidentModel.incident_id, IncidentModel.create_name, IncidentModel.experi_type,
                             ProcessModel.process_id, ProcessModel.process_name, 
                             ProcessModel.start_time_d, ProcessModel.end_time_d, 
-                            ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).first()
+                            ProcessModel.process_name,ProcessModel.process_status,ProcessModel.experimenter,ProcessModel.process_owner).all()
+        print(dis_process)
         response_data = [dict(zip(result.keys(), result)) for result in dis_process]
+        
         for entity in response_data:
                 entity['start_time_d'] = datetime.datetime.strftime(entity['start_time_d'], '%Y-%m-%d %H:%M:%S')
                 entity['end_time_d'] = datetime.datetime.strftime(entity['end_time_d'], '%Y-%m-%d %H:%M:%S')
-  
+        response_data = response_data[0]
         #2 Get group process under the same incident
-        group_incident_id = dis_process.incident_id
+        group_incident_id = response_data['incident_id']
         group_processes = ProcessModel.query.filter(ProcessModel.incident_id==group_incident_id).order_by(ProcessModel.step_number).all()
         co_workers = set()
         group_processes_names =[]
         for g_p in group_processes:
             co_workers.add(g_p.process_owner)
-            group_processes_names.append(g_p.process_name)
+            processObj = { }
+            processObj['process_name'] = g_p.process_name
+            processObj['process_id'] = g_p.process_id
+            processObj['process_owner'] = g_p.process_owner
+            group_processes_names.append(processObj)
         response_data["co_experimenter"] = list(co_workers)
         response_data["processes"] = group_processes_names
 
         #3 get group Components
-        group_components = ComponentModel.query.filter(ComponentModel.process_id==args['process_id']) \
+        group_components = ComponentModel.query.filter(ComponentModel.incident_id==group_incident_id) \
                             .all()
-        components_data = [dict(zip(result.keys(), result)) for result in group_components]
-        del components_data['create_at']
-        del components_data['update_at']
+        components_data = [result.to_dict() for result in group_components]
+
+        for entity in components_data:
+            del entity['create_at']
+            del entity['update_at']
+        #del components_data['create_at']
+        #del components_data['update_at']
         #4 update return data
-        response_data.update(components_data)
+        response_data['componentlist'] = components_data
+        #response_data.update(components_data)
 
         return {'data':response_data}
 
