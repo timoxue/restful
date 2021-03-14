@@ -13,7 +13,7 @@ class Message(db.Model, Serializrable):
    
     #message状态 0:未读 1 已读
     message_satus = db.Column(db.Integer, nullable=False)
-    #message type: 0:入库申请 1 出库申请 2 等待入库 3 报损消息 4 工单分配 5 入库申请通过
+    #message type: 0:入库申请 1 出库申请 2 等待入库 3 报损消息 4 工单分配 5 入库申请通过 6 入库申请驳回
     message_type = db.Column(db.Integer)
     #创建消息账号
     create_name = db.Column(db.String(80), nullable=False)

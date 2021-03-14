@@ -18,9 +18,7 @@ class Instore(Resource):
     # @jwt_required()
     def get(self, id):
         result = InstoreModel.query.filter_by(id=id).first()
-        # print(current_identity)
-        # joined_table = db.session.query(, ProjectModel).outerjoin(ProjectModel).filter(ProgramModel.task_id==task_id).all()
-        # result = Combined(ProgramModel, ProjectModel).exclude(['id'], ['id']).to_dict(joined_table)
+
         if result:
             return result.to_dict()
         return NotFound.message, NotFound.code
@@ -33,17 +31,20 @@ class Instore(Resource):
 
 
 class InstoreList(Resource):
-
+    @jwt_required()
     def get(self):
-        result = [instore.to_dict() for instore in InstoreModel.query.all()]
+        username = current_identity.to_dict()['username']
+        result = [instore.to_dict() for instore in InstoreModel.query.filter(InstoreModel.create_name == username).all()]
 
         return {'data': result}
 
+    @jwt_required()
     def post(self):
+        username = current_identity.to_dict()['username']
         # print(json.load(request.json))
         instore = InstoreModel()
         instore = instore.from_dict(request.json)
-
+        instore['create_name'] = username
         db.session.add(instore)
         db.session.commit()
         #新建入库申请
@@ -71,15 +72,30 @@ def getConfirm(order_number):
 
 
 @app.route('/confirmInstore', methods=['POST'])
+
+@jwt_required()
 def confirmStore():
+    username = current_identity.to_dict()['username']
     order_number = request.json['order_number']
     id = request.json['id']
     is_num = request.json['is_num']
-
-    InstoreModel.query.filter_by(order_number=order_number, id=id).update({'is_status': 1,
+    status = request.json['status'] #审核状态
+    InstoreModel.query.filter_by(order_number=order_number, id=id).update({'is_status': status,
                                                                            'in_store_num': is_num,
                                                                            'check_name': request.json['check_name'],
                                                                            'check_time': request.json['check_time']
                                                                            })
+    
     db.session.commit()
+
+    #new a 入库申请通过/驳回
+    data = db.session.query(InstoreModel.create_name).filter_by(order_number=order_number, id=id).first()
+    data = dict(zip(data.keys(), data))
+    print (data)
+    if status == 1:
+
+        MessageList().newMeassge("InStore",5,username,data['create_name'])
+    elif status == 2:
+        MessageList().newMeassge("InStore",6,username,data['create_name'])
+
     return 'Update %s store successfully' % order_number

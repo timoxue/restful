@@ -1,4 +1,4 @@
-# encoding:UTF-8 
+# encoding:UTF-8
 
 from flask_restful import Resource
 from flask import Flask, jsonify, abort, request
@@ -51,13 +51,14 @@ class MessageList(Resource):
         message.message_satus = 0
         if type == 0:
             message.message_notes = '您有一条入库申请'
+        elif type == 1:
+            message.message_notes = '您有一条出库申请'
+        elif type == 5:
+             message.message_notes = '您有一条入库申请通过消息' 
+        elif type == 6:
+             message.message_notes = '您有一条入库申请驳回消息'                
         db.session.add(message)
         db.session.commit()
         return Success.message, Success.code
 
-    def put(self):
-        pro_name = request.json['pro_name']
-        project = ProjectModel.query.filter_by(pro_name=pro_name).first()
-        project = project.from_dict(request.json)
-        db.session.commit()
-        return Success.message, Success.code
+

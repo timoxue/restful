@@ -10,11 +10,11 @@ class Instore(db.Model, Serializrable):
    
     id = db.Column(db.Integer, db.Sequence('id_seq'),primary_key=True,autoincrement=True)
     #标识ID
-    is_type = db.Column(db.Integer, nullable=False) #0,1,2
+    is_type = db.Column(db.Integer, nullable=False) #0,1,2 入库类型
     in_date = db.Column(db.String(8),nullable = False)
     program_code = db.Column(db.String(80),nullable = False)
     order_number = db.Column(db.String(80),nullable = False)
-    is_status = db.Column(db.Integer, nullable=False) #0,1,2
+    is_status = db.Column(db.Integer, nullable=False) #0申请,1成功,2失败
     is_num = db.Column(db.Integer, nullable=False)
     in_store_num = db.Column(db.Integer, nullable=False,default = 0)
     check_name = db.Column(db.String(80))
