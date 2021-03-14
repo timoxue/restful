@@ -87,6 +87,15 @@ class ComponentList(Resource):
         #response_data.update(components_data)
 
         return {'data':response_data}
+    def put(self):
+        request_data = request.json
+        ComponentList = request_data['data']
+        for value in ComponentList:
+            
+            ComponentModel.query.filter(ComponentModel.component_unique_id==value['component_unique_id']).update(value)
+            db.session.commit()
+        return Success.message, Success.code        
+
 
 
 class CheckComponent(Resource):

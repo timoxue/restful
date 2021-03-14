@@ -1,3 +1,5 @@
+# encoding:UTF-8 
+
 from flask_restful import Resource, Api, reqparse
 from flask import Flask, jsonify, abort, request
 from models.Process import Process as ProcessModel
@@ -42,12 +44,13 @@ class ProcessList(Resource):
         return {'data':response_data}
 
 class ProcessStatus(Resource):
-    def post(self):
+    def put(self):
         req_data = request.json
         value = {}
         process_id = req_data['process_id']
-        value['process_status'] = req_data['process_id']
-        value['experimenter'] = req_data['experimenter']
+        value['process_status'] = req_data['process_status'] 
+        # if  req_data['experimenter']:
+        #     value['experimenter'] = req_data['experimenter']
         #del req_data['process_id']
         #del req_data['create_at']
         #del req_data['update_at']
@@ -61,15 +64,29 @@ class ProcessStatus(Resource):
 
 
 @app.route('/getOverviewProStatus')
+@jwt_required()
 def overviewStatus():
-    allIncident = ProcessModel.query.count()
-    finishIncident = ProcessModel.query.filter(ProcessModel.process_status == 3).count()
-    assginIncident = ProcessModel.query.filter(ProcessModel.process_status == 1).count()
-    processIncident = ProcessModel.query.filter(ProcessModel.process_status == 2).count()
+    username = current_identity.to_dict()['username']
+    req_data = request.json
+    conditions = []
+    parser = reqparse.RequestParser()    
+    role_type = parser.add_argument('role_type')
+    if role_type == 'process_owner':
+        conditions.append(ProcessModel.process_owner == username)
+    if role_type == "experimenter":
+        conditions.append(ProcessModel.experimenter == username)
+
+    allIncident = ProcessModel.query.filter(*conditions).count() #分配给自己的工序
+    finishIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 4).count()
+    assginIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 2).count() #已分配和待领取
+    processIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 3).count()
+    unassginIncident =  ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 1).count()#待分配
     data = {
         "allIncident":allIncident,
         "finishIncident":finishIncident,
         "assginIncident":assginIncident,
-        "processIncident":processIncident
+        "processIncident":processIncident,
+        "unassginIncident":unassginIncident
+
     }
     return data
