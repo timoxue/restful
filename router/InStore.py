@@ -76,26 +76,26 @@ def getConfirm(order_number):
 @jwt_required()
 def confirmStore():
     username = current_identity.to_dict()['username']
-    order_number = request.json['order_number']
-    id = request.json['id']
-    is_num = request.json['is_num']
-    status = request.json['status'] #审核状态
-    InstoreModel.query.filter_by(order_number=order_number, id=id).update({'is_status': status,
-                                                                           'in_store_num': is_num,
-                                                                           'check_name': request.json['check_name'],
-                                                                           'check_time': request.json['check_time']
-                                                                           })
+    value = {}
+    value['order_number'] = request.json['order_number']
+    value['id'] = request.json['id']
+
+    value['is_num'] = request.json['is_num']
+    value['is_status'] = request.json['status'] #审核状态
+    value['check_name'] = request.json['check_name']
+    value['check_time'] = request.json['check_time']
+    InstoreModel.query.filter_by(order_number=request.json['order_number'], id=request.json['id']).update(value)
     
     db.session.commit()
 
     #new a 入库申请通过/驳回
-    data = db.session.query(InstoreModel.create_name).filter_by(order_number=order_number, id=id).first()
+    data = db.session.query(InstoreModel.create_name).filter_by(order_number=request.json['order_number'], id=request.json['id']).first()
     data = dict(zip(data.keys(), data))
     print (data)
-    if status == 1:
+    if  value['is_status'] == 1:
 
         MessageList().newMeassge("InStore",5,username,data['create_name'])
-    elif status == 2:
+    elif  value['is_status'] == 2:
         MessageList().newMeassge("InStore",6,username,data['create_name'])
 
-    return 'Update %s store successfully' % order_number
+    return 'Update %s store successfully' % request.json['order_number']
