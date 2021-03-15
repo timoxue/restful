@@ -72,11 +72,11 @@ class CheckProcessStatus(Resource):
         if not next_process_id:
             ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
             ProcessModel.query.filter(ProcessModel.process_id==next_process_id).update({'process_status': 1}) 
-            ComponentModel.query.filter(ComponentModel.process_owner==process_id).update({'component_status1':1})
+            ComponentModel.query.filter(ComponentModel.process_id==process_id).update({'component_status1':1, 'process_id': next_process_id})
         else:
             ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
             IncidentModel.query.filter(IncidentModel.incident_id==incdient_id).update({'incident_status': 2})
-            ComponentModel.query.filter(ComponentModel.process_owner==process_id).update({'component_status1':3})
+            ComponentModel.query.filter(ComponentModel.process_id==process_id).update({'component_status1':3})
 
         return Success.message, Success.code
 
