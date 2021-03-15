@@ -62,6 +62,23 @@ class ProcessStatus(Resource):
         db.session.commit()
         return Success.message, Success.code
 
+class CheckProcessStatus(Resource):
+    def post(self):
+        req_data = request.json
+        process_id = req_data['process_id']
+        current_process = ProcessModel.query.filter_by(ProcessModel.process_id==process_id).first()
+        next_process_id = current_process.pos_process_id
+        incdient_id = current_process.incdient_id
+        if not next_process_id:
+            ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
+            ProcessModel.query.filter(ProcessModel.process_id==next_process_id).update({'process_status': 1}) 
+            ComponentModel.query.filter(ComponentModel.process_owner==process_id).update({'component_status1':1})
+        else:
+            ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
+            IncidentModel.query.filter(IncidentModel.incident_id==incdient_id).update({'incident_status': 2})
+            ComponentModel.query.filter(ComponentModel.process_owner==process_id).update({'component_status1':3})
+
+        return Success.message, Success.code
 
 @app.route('/getOverviewProStatus')
 @jwt_required()
