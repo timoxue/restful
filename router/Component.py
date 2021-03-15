@@ -101,19 +101,27 @@ class ComponentList(Resource):
 class CheckComponent(Resource):
     def post(self):
         request_data = request.json
+        component_list = request_data['data']
+        for i, _ in enumerate(component_list):
+            value = {}
+            componet_id = component_list[i]['component_unique_id']
+            #value['']
+
         component_status1 = request_data['component_status1']
+        component_status = request_data['component_status']
         component_id = request_data['id']
-        check_process = request_data['check_process']
+        #check_process = request_data['check_process']
 
         componet = ComponentModel.query.filter(ComponentModel.id==component_id).first()
 
-        ComponentModel.query.filter_by(ComponentModel.id==component_id).update({'component_status1': component_status1})
-        total_num = ComponentModel.query.join(ProcessModel, ComponentModel.process_id==ProcessModel.process_id).count()
-        finished_num = ComponentModel.query.join(ProcessModel, ComponentModel.process_id==ProcessModel.process_id).filter(ComponentModel.component_status1==2).count()
+        ComponentModel.query.filter_by(ComponentModel.id==component_id).update({'component_status1': component_status1,"component_status":component_status})
+        #total_num = ComponentModel.query.join(ProcessModel, ComponentModel.process_id==ProcessModel.process_id).count()
+        #finished_num = ComponentModel.query.join(ProcessModel, ComponentModel.process_id==ProcessModel.process_id).filter(ComponentModel.component_status1==2).count()
 
-        if check_process and (total_num==finished_num):
-            ProcessModel.query.filter_by(ProcessModel.process_id==componet.process_id).update({'process_status': 3})
-            db.session.commit()
+        # if check_process and (total_num==finished_num):
+        #     ProcessModel.query.filter_by(ProcessModel.process_id==componet.process_id).update({'process_status': 3})
+        #     db.session.commit()
 
         db.session.commit()
         return Success.message, Success.code
+

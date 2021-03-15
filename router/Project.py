@@ -5,6 +5,7 @@ from models.db import db
 from router.Status import Success, NotFound
 from flask_jwt import JWT, jwt_required, current_identity
 from models.db import app
+from router.Message import MessageList
 
 
 class Project(Resource):
@@ -41,6 +42,11 @@ class ProjectList(Resource):
         
         db.session.add(project)
         db.session.commit()
+
+        #new message
+        MessageList().newMeassge(7,project.create_name,project.res_name)
+
+
         return Success.message, Success.code
 
     def put (self):

@@ -43,15 +43,15 @@ class InstoreList(Resource):
         username = current_identity.to_dict()['username']
         # print(json.load(request.json))
         instore = InstoreModel()
+        print(username)
         instore = instore.from_dict(request.json)
-        instore['create_name'] = username
+        instore.create_name = username
         db.session.add(instore)
         db.session.commit()
         #新建入库申请
         data = db.session.query(ProgramModel.create_name).join(InstoreModel,InstoreModel.order_number == ProgramModel.order_number).first()
         data = dict(zip(data.keys(), data))
-        print (data)
-        MessageList().newMeassge("InStore",0,instore.create_name,data['create_name'])
+        MessageList().newMeassge(0,instore.create_name,data['create_name'])
         return Success.message, Success.code
 
     def put(self):
@@ -94,8 +94,8 @@ def confirmStore():
     print (data)
     if  value['is_status'] == 1:
 
-        MessageList().newMeassge("InStore",5,username,data['create_name'])
+        MessageList().newMeassge(5,username,data['create_name'])
     elif  value['is_status'] == 2:
-        MessageList().newMeassge("InStore",6,username,data['create_name'])
+        MessageList().newMeassge(6,username,data['create_name'])
 
     return 'Update %s store successfully' % request.json['order_number']

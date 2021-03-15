@@ -11,6 +11,7 @@ from models.db import db
 from models.db import app
 from sqlalchemy import or_
 from flask_jwt import JWT, jwt_required, current_identity
+from router.Message import MessageList
 
 
 from router.Status import Success, NotFound
@@ -51,9 +52,12 @@ class Incident(Resource):
         update_process_list = []
         for i in range(list_l):
             process_list[i]['incident_id'] = incident.incident_id
+            process_list[i]['experiment_owner'] = username
             if process_list[i]['step_number'] == 0:
                 #第一个工序的状态默认为待分配
                 process_list[i]['process_status'] = 1
+                #取第一个工序负责人，并向其发消息
+                recipient_name = process_list[i]['process_owner']
             else:
                 process_list[i]['process_status'] = 0
             p = ProcessModel().from_dict(process_list[i])
@@ -103,6 +107,9 @@ class Incident(Resource):
             ComponentModel.query.filter(ComponentModel.id==component_list[i]['id']).update(value)
             db.session.commit()
 
+        #new message
+        MessageList().newMeassge(4,username,recipient_name)
+
         return Success.message, Success.code
 
 
@@ -115,7 +122,7 @@ class IncidentList(Resource):
         # parser.add_argument('incident_status', type=int)
         # args = parser.parse_args()
         results = IncidentModel.query. \
-        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2)).\
+        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2,ProcessModel.process_status == 3)).\
         join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number).\
         join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
         with_entities(ProgramModel.pro_name, ProgramModel.pro_id,

@@ -22,7 +22,7 @@ class Component(db.Model, Serializrable):
     process_id = db.Column(db.Integer)
     #试验件状态 0:待入库 1: 确认入库   2:出库
     component_status = db.Column(db.Integer,default=0)
-    #试验件状态1  0:待分配 1 已分配 2: 实验结束 3 待审核
+    #试验件状态1  0:待分配 1 已分配 2 实验中 3: 实验结束 4 待审核
     component_status1 = db.Column(db.Integer)
     #实验负责人
     experiment_owner = db.Column(db.String(20))
