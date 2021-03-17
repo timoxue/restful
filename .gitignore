@@ -5,3 +5,5 @@ config/connection.conf
 config/connection.conf
 config/connection.conf
 sql/*.~sql
+server.log
+upload/*

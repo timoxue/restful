@@ -20,6 +20,13 @@ from models.db import app
 from utils.security import authenticate, identity
 from flask_jwt import JWT, jwt_required, current_identity
 import datetime
+#import logging
+
+# logging.basicConfig(level=logging.DEBUG,
+#                     format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+#                     datefmt='%a, %d %b %y %H:%M:%S',  
+#                     filename='server.log'  
+#                     )
 
 api = Api(app)
 app.secret_key = 'super_secret'
@@ -61,3 +68,4 @@ api.add_resource(File, '/files')
 
 if __name__ == '__main__':
     app.run(debug=False)
+    #logging.info("Server is Started")
