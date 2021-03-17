@@ -31,7 +31,7 @@ class Incident(Resource):
       #1. get process list and component_list
         component_list = req_data['component_list']
         process_list = req_data['process_list']
-        req_data['create_user'] = "test"
+        
 
         #2. get component list
 
@@ -117,24 +117,27 @@ class Incident(Resource):
 
 
 class IncidentList(Resource):
+    @jwt_required()
     def get(self):
+        username = current_identity.to_dict()['username']
         # parser = reqparse.RequestParser()
         # parser.add_argument('incident_status', type=int)
         # args = parser.parse_args()
-        results = IncidentModel.query. \
-        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2,ProcessModel.process_status == 3)).\
+        results = IncidentModel.query.filter(IncidentModel.create_name == username). \
+        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2,ProcessModel.process_status == 3,ProcessModel.process_status == 4)).\
         join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number).\
         join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
         with_entities(ProgramModel.pro_name, ProgramModel.pro_id,
-                ProjectModel.finish_time,
+               
                 IncidentModel.incident_id, IncidentModel.create_name, 
-                ProcessModel.process_id, ProcessModel.process_name, ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
+                ProcessModel.process_id, ProcessModel.process_name,  IncidentModel.create_at,   ProjectModel.finish_time, ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
         #incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
 
         response_data = [dict(zip(result.keys(), result)) for result in results]
         for entity in response_data:
                 entity['start_time_d'] = datetime.datetime.strftime(entity['start_time_d'], '%Y-%m-%d %H:%M:%S')
                 entity['end_time_d'] = datetime.datetime.strftime(entity['end_time_d'], '%Y-%m-%d %H:%M:%S')
+                entity['create_at'] = datetime.datetime.strftime(entity['create_at'], '%Y-%m-%d %H:%M:%S')
   
         return {'data':response_data}
 

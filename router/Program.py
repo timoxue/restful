@@ -65,7 +65,7 @@ class ProgramList(Resource):
         # result = Combined(
         #     ProgramModel, InstoreModel.is_num).to_dict(joined_table)
         data = db.session.execute(
-             'SELECT * FROM PROGRAM_VIEW WHERE RES_NAME = (:USER)', {"USER":username}
+             'SELECT * FROM PROGRAM_VIEW WHERE RES_NAME = (:USER) ORDER BY create_time ' , {"USER":username}
         ).fetchall()
         
         results = [dict(zip(result.keys(), result)) for result in data]

@@ -23,9 +23,11 @@ class Message(Resource):
         #     return project.to_dict()
         # return NotFound.message, NotFound.code
 
-    def delete(self, pro_name):
-        project = ProjectModel.query.filter_by(pro_name=pro_name).first()
-        db.session.delete(project)
+    def put(self):
+        message_id = request.json['message_id']
+        MessageModel.query.filter(MessageModel.message_id == message_id).update({
+            "message_satus":1
+        })
         db.session.commit()
         return Success.message, Success.code
 
@@ -41,7 +43,7 @@ class MessageList(Resource):
         username = current_identity.to_dict()['username']
         print(username)
         messages =  MessageModel.query.filter(
-            MessageModel.recipient_name == username).filter(MessageModel.message_satus == 0).join(MessagetxtModel,MessagetxtModel.message_type == MessageModel.message_type).with_entities(MessageModel.recipient_name,MessagetxtModel.message_notes,MessageModel.message_satus,MessageModel.create_name,MessageModel.create_at).all()
+            MessageModel.recipient_name == username).filter(MessageModel.message_satus == 0).join(MessagetxtModel,MessagetxtModel.message_type == MessageModel.message_type).with_entities(MessageModel.message_id,MessageModel.recipient_name,MessagetxtModel.message_notes,MessageModel.message_satus,MessageModel.create_name,MessageModel.create_at).all()
         response_data = [dict(zip(result.keys(), result)) for result in messages]
         count = len(response_data)
         str = json.dumps(response_data, cls=DateEncoder)

@@ -5,11 +5,15 @@ from models.FileModel import FileModel
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 from models.db import db
+from models.db import app
+from os.path import join, dirname, realpath
+
 from router.Status import Success, NotFound
+from flask import send_file, send_from_directory, safe_join, abort
 
 class File(Resource):
     def get(self):
-        return {'hello': 'world'}
+        return send_from_directory("/upload/updated/gongdan", filename="test.doc", as_attachment=True)
     
     def post(self):
         saved_file = request.files.get('file')
@@ -35,4 +39,12 @@ class File(Resource):
         return Success.message, Success.code
 
 
-        
+
+@app.route("/getFile/<file_name>")
+def get_image(file_name):
+    tem_path = FileHandler("template", "instore").get_file()
+    print (tem_path)
+    try:
+        return send_from_directory(tem_path, filename=file_name, as_attachment=True)
+    except IOError:
+        abort(404)       

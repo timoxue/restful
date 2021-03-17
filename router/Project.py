@@ -60,12 +60,17 @@ class ProjectList(Resource):
 @jwt_required()
 def getProjects():
     username = current_identity.to_dict()['username']
-    projects = [data.to_dict() for data in ProjectModel.query.filter_by(res_name=username).all()]
+    data = db.session.execute(
+        'select * from PROGRAM_VIEW  where order_number is null and res_name = (:username)',{"username":username}
+         
+        ).fetchall()
+    results = [dict(zip(result.keys(), result))  for result in data ]
+    #projects = [data.to_dict() for data in ProjectModel.query.filter_by(res_name=username).all()]
     data = []
     obj = {}
-    for r in projects:
+    for r in results:
         obj = {}
-        obj['key'] = r['id']
-        obj['value'] = r['pro_name']
+        obj['key'] = r['project_id']
+        obj['value'] = r['project_name']
         data.append(obj)
     return {'data': data}

@@ -10,6 +10,7 @@ from models.project import Project as ProjectModel
 from models.db import db
 from models.db import app
 from flask_jwt import JWT, jwt_required, current_identity
+from router.Message import MessageList
 
 from router.Status import Success, NotFound
 import datetime
@@ -20,13 +21,16 @@ class ProcessList(Resource):
         username = current_identity.to_dict()['username']
         conditions = []
         parser = reqparse.RequestParser()
-        role_type = parser.add_argument('role_type')
+        parser.add_argument('role_type')
+        args = parser.parse_args()
+        role_type = args['role_type']
+
         if role_type == 'process_owner':
             conditions.append(ProcessModel.process_owner == username)
         if role_type == "experimenter":
             conditions.append(ProcessModel.experimenter == username)
 
-        args = parser.parse_args()
+        
         results = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status != 0).join(IncidentModel, IncidentModel.incident_id==ProcessModel.incident_id). \
         join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number).\
         join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
@@ -44,11 +48,27 @@ class ProcessList(Resource):
         return {'data':response_data}
 
 class ProcessStatus(Resource):
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('process_id', type=int)
+        args = parser.parse_args()
+        print(args)
+        process_id = args['process_id']
+        result = ProcessModel.query.filter(ProcessModel.process_id==process_id).with_entities(ProcessModel.process_id,ProcessModel.process_status).first()
+        print (result)
+        response_data = dict(zip(result.keys(), result)) 
+        return response_data
+        
+
     def put(self):
         req_data = request.json
         value = {}
         process_id = req_data['process_id']
-        value['process_status'] = req_data['process_status'] 
+        value['process_status'] = req_data['process_status']
+        if req_data.has_key('experimenter'):
+
+
+            value['experimenter'] = req_data['experimenter']
         # if  req_data['experimenter']:
         #     value['experimenter'] = req_data['experimenter']
         #del req_data['process_id']
@@ -62,22 +82,29 @@ class ProcessStatus(Resource):
         db.session.commit()
         return Success.message, Success.code
 
+
+
 class CheckProcessStatus(Resource):
     def post(self):
         req_data = request.json
         process_id = req_data['process_id']
-        current_process = ProcessModel.query.filter_by(ProcessModel.process_id==process_id).first()
+        current_process = ProcessModel.query.filter(ProcessModel.process_id==process_id).first()
         next_process_id = current_process.pos_process_id
-        incdient_id = current_process.incdient_id
-        if not next_process_id:
+        incident_id = current_process.incident_id
+        if next_process_id: #如果有下一步
             ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
             ProcessModel.query.filter(ProcessModel.process_id==next_process_id).update({'process_status': 1}) 
-            ComponentModel.query.filter(ComponentModel.process_id==process_id).update({'component_status1':1, 'process_id': next_process_id})
+            ComponentModel.query.filter(ComponentModel.process_id==process_id).update({'component_status1':1, 'process_id': next_process_id,'experimenter':" "})
+
+            #new message
+            next_process = ProcessModel.query.filter(ProcessModel.process_id==next_process_id).first()
+            MessageList().newMeassge(4,next_process.experiment_owner,next_process.process_owner)
+
         else:
             ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
-            IncidentModel.query.filter(IncidentModel.incident_id==incdient_id).update({'incident_status': 2})
+            IncidentModel.query.filter(IncidentModel.incident_id==incident_id).update({'incident_status': 2})
             ComponentModel.query.filter(ComponentModel.process_id==process_id).update({'component_status1':3})
-
+        db.session.commit()
         return Success.message, Success.code
 
 @app.route('/getOverviewProStatus')
@@ -87,16 +114,19 @@ def overviewStatus():
     req_data = request.json
     conditions = []
     parser = reqparse.RequestParser()    
-    role_type = parser.add_argument('role_type')
+    parser.add_argument('role_type')
+    args = parser.parse_args()
+    role_type = args['role_type']
     if role_type == 'process_owner':
         conditions.append(ProcessModel.process_owner == username)
     if role_type == "experimenter":
         conditions.append(ProcessModel.experimenter == username)
-
+    print(username)
+    print (role_type)
     allIncident = ProcessModel.query.filter(*conditions).count() #分配给自己的工序
-    finishIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 4).count()
+    finishIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 4).count() #已完成
     assginIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 2).count() #已分配和待领取
-    processIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 3).count()
+    processIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 3).count() #实验中
     unassginIncident =  ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 1).count()#待分配
     data = {
         "allIncident":allIncident,

@@ -10,7 +10,7 @@ from router.Experiment import Experiment
 from router.Incident import Incident,IncidentList
 from router.Process import ProcessStatus
 from router.Process import ProcessList
-from router.Message import MessageList
+from router.Message import Message,MessageList
 from router.Component import ComponentList
 from router.Component import CheckComponent
 from router.Process import CheckProcessStatus
@@ -48,6 +48,8 @@ api.add_resource(ProcessStatus, '/process_status')
 api.add_resource(CheckProcessStatus, '/checkProcess')
 
 api.add_resource(MessageList,'/messageList')
+api.add_resource(Message,'/message')
+
 api.add_resource(ComponentList,'/getAssignList')
 api.add_resource(CheckComponent, '/checkComponent')
 
