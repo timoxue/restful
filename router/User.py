@@ -7,7 +7,7 @@ from router.Status import Success, NotFound
 from flask_jwt import JWT, jwt_required, current_identity
 
 class User(Resource):
-    @jwt_required()
+    #@jwt_required()
     def get(self, user_id):
         user = UserModel.query.filter_by(username=user_id).first()
         if user:
@@ -19,7 +19,17 @@ class User(Resource):
         db.session.delete(user)
         db.session.commit()
         return Success.message, Success.code
-
+    def put (self,user_id):
+        password = request.json['password']
+        u_status = request.json['u_status']
+        print (password)
+        UserModel.query.filter_by(username=user_id).update({
+            "u_password":password,
+            "u_status":u_status
+        })
+        
+        db.session.commit()
+        return Success.message, Success.code    
 
 class UserList(Resource):
     @jwt_required()
@@ -42,10 +52,5 @@ class UserList(Resource):
         db.session.commit()
         return Success.message, Success.code
 
-    def put (self):
-        username = request.json['username']
-        user = UserModel.query.filter_by(username=username).first()
-        user = user.from_dict(request.json)
-        db.session.commit()
-        return Success.message, Success.code
+
 

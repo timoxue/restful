@@ -29,6 +29,13 @@ class Instore(Resource):
         db.session.commit()
         return Success.message, Success.code
 
+    def put(self,id):
+        instore = InstoreModel.query.filter_by(id = id).first()
+        is_num = instore.is_num
+        #正式入库
+        InstoreModel.query.filter(InstoreModel.id == id).update({"in_store_num":is_num})
+        db.session.commit()
+        return Success.message, Success.code
 
 class InstoreList(Resource):
     @jwt_required()
@@ -81,7 +88,7 @@ def confirmStore():
     value['order_number'] = request.json['order_number']
     value['id'] = request.json['id']
 
-    value['is_num'] = request.json['is_num']
+    #value['is_num'] = request.json['is_num'] 不改变入库数量 
     value['is_status'] = request.json['status'] #审核状态
     value['check_name'] = request.json['check_name']
     value['check_time'] = request.json['check_time']

@@ -1,3 +1,4 @@
+# encoding:UTF-8 
 from db import db
 from models import Serializrable
 import datetime
@@ -16,7 +17,7 @@ class User(db.Model, Serializrable):
     u_tele = db.Column(db.String(256),nullable = False)  
     is_delete = db.Column(db.Boolean(),default=False)
     u_email = db.Column(db.String(120),  nullable=False)
-    l_times = db.Column(db.Integer,default=0)
+    u_status = db.Column(db.Integer,default=0) #初始状态为0
 
     def __repr__(self):
         return '<User %r>' % self.username
