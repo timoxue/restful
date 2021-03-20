@@ -1,19 +1,18 @@
 from config import upload_config
 import os
 from config import root_folder
+import datetime
 
 class FileHandler(object):    
-    def __init__(self, file_type, category):
+    def __init__(self, category):
         # file_type is "tempate or updated"
         # category should be pre-defined under config/upload.conf
-        if file_type == 'template':
-            self.short_location = os.path.join(upload_config.get(category, "base_folder"), upload_config.get(category, "template_folder"))
-        if file_type == 'update':
-            self.short_location = os.path.join(upload_config.get(category, "base_folder"), upload_config.get(category, "update_folder"))
-
-        self.file_location = os.path.join(root_folder, self.short_location)
+        self.short_location = os.path.join(upload_config.get(category, "base_folder"), upload_config.get(category, "update_folder"))
+        if category == 'template':
+            self.file_location = os.path.join(root_folder, self.short_location)
+        else:
+            self.file_location = os.path.join(root_folder, self.short_location, datetime.datetime.now().strftime("%Y%m%d"))
         self.check_folder(self.file_location)
-        
     
     def upload(self, data, filename):
     # file should be from request as request.data
@@ -31,5 +30,5 @@ class FileHandler(object):
         if os.path.isdir(location):
             return True
         else:
-            os.mkdir(location)
+            os.makedirs(location)
             return False

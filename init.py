@@ -9,6 +9,7 @@ from models.Component import Component as ComponentModel
 from models.Experiment import Experiment as ExperimentModel
 from models.Message import Message as MessageModel
 from models.MessageTXT import Messagetxt as MessagetxtModel
+from models.FileModel import FileModel
 
 
 from models.Test import People as PeopleModel

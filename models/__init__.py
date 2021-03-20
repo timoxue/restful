@@ -23,6 +23,7 @@ class Serializrable(object):
                 convert_datetime = datetime.datetime.strptime(attributes[attribute].encode('utf-8'), '%Y%m%d')
                 setattr(self, attribute, convert_datetime)
             else:
+                #print(attributes[attribute])
                 setattr(self, attribute, attributes[attribute])
             #print(getattr(self, attribute))
         return self
