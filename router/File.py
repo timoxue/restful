@@ -38,7 +38,8 @@ class File(Resource):
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
+            #filename = secure_filename(file.filename)
+            filename = file.filename
             handler =  FileHandler(category)
             #print(file_path)
             file_json = {
@@ -52,7 +53,7 @@ class File(Resource):
             db.session.add(file_to_save)
             db.session.commit()
             #logging.info("successfully insert a file record: " +  [k +": "+ v for (k,v) in  dict.items()])
-            handler.upload(file, str(file_to_save.id) + "." + filename.rsplit('.', 1)[1].lower())
+            handler.upload(file, str(file_to_save.id) + "." + filename.rsplit('.', 1)[-1].lower())
             #logging.info("successfully save a file as: " +  str(file_to_save.id) + "." + filename.rsplit('.', 1)[1].lower())
         return {'file_id': file_to_save.id}, Success.code
 
@@ -60,10 +61,18 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route("/getFile/<file_name>")
-def get_image(file_name):
-    tem_path = FileHandler("template").get_file()
+@app.route("/getFile/<file_id>")
+def get_file(file_id):
+    target_file = FileModel.query.filter(FileModel.id==file_id).first()
+    if target_file is None:
+        return {'message': 'File Not Found'}, Success.code
+    #category = target_file.f_category
+    location = target_file.f_location
+    file_name = target_file.f_filename
+    extension = file_name.rsplit('.', 1)[-1].lower()
+    tem_path = os.path.join(location, str(file_id)+"." + extension)
     print (tem_path)
+    
     try:
         return send_from_directory(tem_path, filename=file_name, as_attachment=True)
     except IOError:
