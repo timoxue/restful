@@ -62,7 +62,7 @@ def allowed_file(filename):
 
 @app.route("/getFile/<file_name>")
 def get_image(file_name):
-    tem_path = FileHandler("template", "instore").get_file()
+    tem_path = FileHandler("template").get_file()
     print (tem_path)
     try:
         return send_from_directory(tem_path, filename=file_name, as_attachment=True)

@@ -22,7 +22,10 @@ class Instore(db.Model, Serializrable):
     create_name = db.Column(db.String(80),nullable = False)
     store_name = db.Column(db.String(80),nullable = False)
     location = db.Column(db.String(80),nullable = False)
-    check_form_path = db.Column(db.String(120),nullable = False)
+    #任务书id
+    check_form_id = db.Column(db.Integer)
+    # 试验大纲id
+  
     create_time = db.Column(db.DateTime, default=datetime.datetime.now)
 
 

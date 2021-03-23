@@ -15,21 +15,30 @@ class Program(db.Model, Serializrable):
     pro_id = db.Column(db.Integer,db.ForeignKey('project.id'), nullable=False)
     #委托单号
     order_number = db.Column(db.String(80),nullable = False)
-    #
+    #任务书编码
     task_id = db.Column(db.String(80),nullable = False) 
-    task_path = db.Column(db.String(80))
+    #任务书id
+    task_form_id = db.Column(db.Integer)
+    #试验大纲编码
     program_code = db.Column(db.String(80),nullable = False)  
-    program_code_path = db.Column(db.String(80))
+    #试验大纲id
+    program_id = db.Column(db.Integer)
+    #任务书名称
     task_name_book = db.Column(db.String(80))
     #委托单时间
     order_time = db.Column(db.String(8),nullable=False)
     #备注
     remarks = db.Column(db.String(120))
+    #检测项目名称
     test_item = db.Column(db.String(80))
-    contract_id = db.Column(db.String(80)) 
+    #试验任务课题组/合同号
+    contract_id = db.Column(db.String(80))
+    #样品名称
     sample_name = db.Column(db.String(80))
     sample_material = db.Column(db.String(80))
     sample_num = db.Column(db.String(80))
+    #委托书id
+    order_id = db.Column(db.Integer)
     create_time =  db.Column(db.DateTime, default=datetime.datetime.now)
     #创建项目账号
     create_name = db.Column(db.String(80))
