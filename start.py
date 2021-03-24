@@ -16,6 +16,7 @@ from router.Component import CheckComponent
 from router.Process import CheckProcessStatus
 
 from router.File import File
+from router.FileTemp import FileTemp
 from models.db import app
 from utils.security import authenticate, identity
 from flask_jwt import JWT, jwt_required, current_identity
@@ -61,6 +62,7 @@ api.add_resource(ComponentList,'/getAssignList')
 api.add_resource(CheckComponent, '/checkComponent')
 
 api.add_resource(File, '/files')
+api.add_resource(FileTemp, '/fileTemp/<f_key>')
 
 
                                                

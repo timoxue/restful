@@ -18,9 +18,7 @@ from flask_jwt import JWT, jwt_required, current_identity
 ALLOWED_EXTENSIONS = ['doc', 'docx', 'xlsx', 'txt', 'ppt', 'pptx']
 
 class File(Resource):
-    @jwt_required()
-    def get(self):
-        return send_from_directory("/upload/updated/gongdan", filename="test.doc", as_attachment=True)
+
     
     #@jwt_required()
     def post(self):
@@ -70,10 +68,11 @@ def get_file(file_id):
     location = target_file.f_location
     file_name = target_file.f_filename
     extension = file_name.rsplit('.', 1)[-1].lower()
-    tem_path = os.path.join(location, str(file_id)+"." + extension)
-    print (tem_path)
+    f_name = str(file_id)+"."+extension
+    #tem_path = os.path.join(location, str(file_id)+"." + extension)
+    #print (tem_path)
     
     try:
-        return send_from_directory(tem_path, filename=file_name, as_attachment=True)
+        return send_from_directory(location, filename=f_name, as_attachment=True)
     except IOError:
         abort(404)       

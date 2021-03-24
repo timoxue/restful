@@ -24,7 +24,7 @@ b.contact , b.tele_phone, b.u_email , b.address,b.id,b.pro_name
 
 CREATE OR REPLACE VIEW PROGRAM_COMPONENT_VIEW
 AS
-SELECT  a.pro_name, a.pro_id , a.task_id , a.order_number,
+SELECT  a.pro_name, a.pro_id , a.task_id , a.order_number,a.ORDER_ID,
 a.task_form_id , a.program_code,
  a.program_id , a.task_name_book,
   a.order_time , a.remarks 
@@ -36,7 +36,7 @@ count(decode(d.component_status1, 1, 1, null)) in_experiment,
 count(decode(d.component_status1, 2, 1, null)) is_finish from program a  
 
 FULL OUTER JOIN components d ON d.order_number = a.order_number 
-GROUP BY a.pro_name, a.pro_id, a.task_id, a.task_form_id, 
+GROUP BY a.pro_name, a.pro_id, a.task_id, a.task_form_id, a.ORDER_ID,
 a.program_code, a.program_id, a.task_name_book, a.order_time, a.remarks, a.test_item, a.contract_id, a.sample_name, 
 a.sample_material, a.sample_num, a.order_number
 
@@ -44,6 +44,7 @@ CREATE OR REPLACE VIEW PROGRAM_VIEW
 AS 
 SELECT a.pro_name,
        a.pro_id,
+       a.ORDER_ID,
        a.task_id,
          a.order_number,
          a.task_form_id,
