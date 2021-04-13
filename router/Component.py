@@ -44,12 +44,12 @@ class ComponentList(Resource):
                     .join(IncidentModel,IncidentModel.incident_id==ProcessModel.incident_id) \
                     .join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number) \
                     .join(ProjectModel, ProjectModel.id==ProgramModel.pro_id) \
-                    .with_entities(ProgramModel.pro_name, ProgramModel.pro_id,ProgramModel.order_number,ProgramModel.task_id,
+                    .with_entities(ProgramModel.pro_name, ProgramModel.pro_id,ProgramModel.order_number,ProgramModel.task_id,ProgramModel.program_id,
                             ProjectModel.finish_time,
                             IncidentModel.incident_id, IncidentModel.create_name, IncidentModel.experi_type,
                             ProcessModel.process_id, ProcessModel.process_name, 
                             ProcessModel.start_time_d, ProcessModel.end_time_d, 
-                            ProcessModel.process_name,ProcessModel.process_status,ProcessModel.experimenter,ProcessModel.process_owner).all()
+                            ProcessModel.process_name,ProcessModel.process_status,ProcessModel.experimenter,ProcessModel.process_owner,ProcessModel.experiment_sheet_id).all()
         print(dis_process)
         response_data = [dict(zip(result.keys(), result)) for result in dis_process]
         

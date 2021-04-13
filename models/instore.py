@@ -33,10 +33,10 @@ class Instore(db.Model, Serializrable):
     store_name = db.Column(db.String(80),nullable = False)
     #入库位置
     location = db.Column(db.String(80),nullable = False)
-    #任务书id
+    #检查单
     check_form_id = db.Column(db.Integer)
-    # 试验大纲id
-  
+    #签字检查单
+    sign_check_form_id = db.Column(db.Integer)
     create_time = db.Column(db.DateTime, default=datetime.datetime.now)
 
 

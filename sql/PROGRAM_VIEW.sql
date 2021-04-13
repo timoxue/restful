@@ -5,7 +5,7 @@ a.task_form_id , a.program_code,
  a.program_id , a.task_name_book,
   a.order_time , a.remarks 
 , a.test_item , a.contract_id , a.sample_name , a.sample_material , 
-a.sample_num, sum(c.is_num - c.in_store_num) AS w_sum,
+a.sample_num, sum(case when c.is_status = 0 then c.is_num else 0 end) AS w_sum, 
 b.res_name, b.create_name 
 , b.finish_time , b.create_time , b.pro_name as project_name,
 b.company , b.category, b.postcode , 

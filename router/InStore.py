@@ -31,7 +31,8 @@ class Instore(Resource):
 
     def put(self,id):
         instore = InstoreModel.query.filter_by(id = id).first()
-        is_num = instore.is_num
+        is_num = request.json['instore'] + instore.in_store_num
+        #is_num = instore.is_num
         #正式入库
         InstoreModel.query.filter(InstoreModel.id == id).update({"in_store_num":is_num})
         db.session.commit()
@@ -92,6 +93,8 @@ def confirmStore():
     value['is_status'] = request.json['status'] #审核状态
     value['check_name'] = request.json['check_name']
     value['check_time'] = request.json['check_time']
+    if value['is_status'] == 1: #申请入库成功
+        value['sign_check_form_id'] = request.json['sign_check_form_id']
     InstoreModel.query.filter_by(order_number=request.json['order_number'], id=request.json['id']).update(value)
     
     db.session.commit()

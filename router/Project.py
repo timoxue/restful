@@ -30,7 +30,7 @@ class ProjectList(Resource):
     def get(self):
         username = current_identity.to_dict()['username']
         print (username)
-        projects = [project.to_dict() for project in ProjectModel.query.filter(ProjectModel.create_name == username).all()]
+        projects = [project.to_dict() for project in ProjectModel.query.filter(ProjectModel.create_name == username).order_by(ProjectModel.create_time).all()]
      
         return {'data':projects}
         #return {'data': [user.to_dict() for user in ProjectModel.query.filter_by(is_delete = False).all()]}

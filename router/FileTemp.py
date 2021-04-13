@@ -15,14 +15,14 @@ from flask import send_file, send_from_directory, safe_join, abort
 from flask_jwt import JWT, jwt_required, current_identity
 
 class FileTemp(Resource):
-    def post(self):
+    def post(self,f_key):
         fileTemp = FileTempModel()
         fileTemp = fileTemp.from_dict(request.json)
         db.session.add(fileTemp)
         db.session.commit()
         return Success.message, Success.code
     def get(self,f_key):
-        fileTemp = FileTempModel.query.filter_by(f_key=f_key).order_by(FileTempModel.create_at.asc()).first()
+        fileTemp = FileTempModel.query.filter_by(f_key=f_key).order_by(FileTempModel.create_at.desc()).first()
         print (fileTemp)
         data = fileTemp.to_dict()
         return data

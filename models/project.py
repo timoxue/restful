@@ -22,6 +22,8 @@ class Project(db.Model, Serializrable):
     tele_phone = db.Column(db.String(80))
     u_email = db.Column(db.String(80))
     address = db.Column(db.String(256))
+    #检查单
+    #check_id = db.Column(db.Integer)
     program = db.relationship('Program', backref='pro', lazy=True)
 
     def __repr__(self):
