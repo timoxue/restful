@@ -8,9 +8,9 @@ from models.Process import Process as ProcessModel
 from models.db import app
 
 from models.db import db
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound, NotUnique
 import datetime
-
+from cx_Oracle import IntegrityError
 
 class Component(Resource):
     def post(self):
@@ -18,7 +18,10 @@ class Component(Resource):
             ComponentModel.__table__.insert(),
             request.json['data']
         )
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            return NotUnique.message, NotUnique.code
         return Success.message, Success.code
 
 
@@ -125,3 +128,8 @@ class CheckComponent(Resource):
         db.session.commit()
         return Success.message, Success.code
 
+class ReportFailureComponent(Resource):
+    def post(self, component_unique_id):
+        ComponentModel.query.filter(ComponentModel.component_unique_id==component_unique_id).update({'component_status1': 5})
+        db.session.commit()
+        return Success.message, Success.code 
