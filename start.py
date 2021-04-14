@@ -12,7 +12,7 @@ from router.Process import ProcessStatus
 from router.Process import ProcessList
 from router.Message import Message,MessageList
 from router.Component import ComponentList
-from router.Component import CheckComponent
+from router.Component import CheckComponent, ReportFailureComponent
 from router.Process import CheckProcessStatus
 from router.Rule import RuletList
 from router.File import File
@@ -60,6 +60,7 @@ api.add_resource(Message,'/message')
 
 api.add_resource(ComponentList,'/getAssignList')
 api.add_resource(CheckComponent, '/checkComponent')
+api.add_resource(ReportFailureComponent, '/reportFailure/<component_unique_id>')
 
 api.add_resource(File, '/files')
 api.add_resource(FileTemp, '/fileTemp/<f_key>')
