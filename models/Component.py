@@ -16,6 +16,8 @@ class Component(db.Model, Serializrable):
     component_unique_id = db.Column(db.String(80), unique=True, nullable=False)
     #委托单单号
     order_number = db.Column(db.String(80),  nullable=False)
+    #入库id
+    instore_id = db.Column(db.Integer)
     #工单id
     incident_id = db.Column(db.Integer) 
     #工序id
