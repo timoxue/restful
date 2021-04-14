@@ -11,6 +11,7 @@ from models.Message import Message as MessageModel
 from models.MessageTXT import Messagetxt as MessagetxtModel
 from models.FileModel import FileModel
 from models.fileTemp import FileTempModel
+from models.RuleModel import RuleModel
 
 from models.Test import People as PeopleModel
 from models.Test import Address as AddressModel

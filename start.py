@@ -14,7 +14,7 @@ from router.Message import Message,MessageList
 from router.Component import ComponentList
 from router.Component import CheckComponent
 from router.Process import CheckProcessStatus
-
+from router.Rule import RuletList
 from router.File import File
 from router.FileTemp import FileTemp
 from models.db import app
@@ -64,6 +64,7 @@ api.add_resource(CheckComponent, '/checkComponent')
 api.add_resource(File, '/files')
 api.add_resource(FileTemp, '/fileTemp/<f_key>')
 
+api.add_resource(RuletList,"/rules")
 
                                                
 
