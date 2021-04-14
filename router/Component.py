@@ -132,3 +132,8 @@ class CheckComponent(Resource):
         db.session.commit()
         return Success.message, Success.code
 
+class ReportFailureComponent(Resource): 
+    def post(self, component_unique_id): 
+        ComponentModel.query.filter(ComponentModel.component_unique_id==component_unique_id).update({'component_status1': 5}) 
+        db.session.commit() 
+        return Success.message, Success.code
