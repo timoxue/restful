@@ -74,3 +74,10 @@ def getProjects():
         obj['value'] = r['project_name']
         data.append(obj)
     return {'data': data}
+
+
+@app.route('/getCompanys')
+def getCompanys():
+    companys =  db.session.query(ProjectModel.company).distinct().with_entities(ProjectModel.company,ProjectModel.contact,ProjectModel.u_email,ProjectModel.postcode,ProjectModel.category,ProjectModel.address,ProjectModel.tele_phone).all()
+    response_data = [dict(zip(result.keys(), result)) for result in companys]
+    return {'data':response_data}

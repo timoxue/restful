@@ -9,7 +9,7 @@ from models.program import Program as ProgramModel
 from models.project import Project as ProjectModel
 from models.db import db
 from models.db import app
-from sqlalchemy import or_
+from sqlalchemy import or_,and_
 from flask_jwt import JWT, jwt_required, current_identity
 from router.Message import MessageList
 
@@ -124,7 +124,7 @@ class IncidentList(Resource):
         # parser.add_argument('incident_status', type=int)
         # args = parser.parse_args()
         results = IncidentModel.query.filter(IncidentModel.create_name == username). \
-        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2,ProcessModel.process_status == 3,ProcessModel.process_status == 4)).\
+        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2,ProcessModel.process_status == 3,and_(ProcessModel.process_status == 4, ProcessModel.pos_process_id == None))).\
         join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number).\
         join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
         with_entities(ProgramModel.pro_name, ProgramModel.pro_id,
