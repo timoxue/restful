@@ -14,6 +14,7 @@ class Experiment(db.Model, Serializrable):
     experi_step = db.Column(db.Integer)
     #派工类型名称
     experi_type = db.Column(db.String(20), nullable=False)
-
+    #派工类型描述
+    experi_des = db.Column(db.String(80))
     def __repr__(self):
          return '(%r, %r)' % (self.experiment_id, self.experiment_name)

@@ -34,3 +34,9 @@ class Experiment(Resource):
                 response_data[ex.experi_type] = []
             response_data[ex.experi_type].append(ex.to_dict())
         return response_data, Success.code
+
+class ExperimentList(Resource):
+    def get(self):
+        experiments = ExperimentModel.query.order_by(ExperimentModel.experi_type, ExperimentModel.experi_step).with_entities(ExperimentModel.experi_type, ExperimentModel.experi_step,ExperimentModel.experi_des,ExperimentModel.experiment_name).all()
+        response_data = [dict(zip(result.keys(), result)) for result in experiments]
+        return {'data':response_data}

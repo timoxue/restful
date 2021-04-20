@@ -6,7 +6,7 @@ from router.Project import Project, ProjectList
 from router.Program import Program, ProgramList
 from router.InStore import Instore,InstoreList
 from router.Component import Component
-from router.Experiment import Experiment
+from router.Experiment import Experiment,ExperimentList
 from router.Incident import Incident,IncidentList
 from router.Process import ProcessStatus
 from router.Process import ProcessList
@@ -48,6 +48,8 @@ api.add_resource(InstoreList, '/instores')
 api.add_resource(Instore, '/instore/<id>')
 api.add_resource(Component, '/components')
 api.add_resource(Experiment, '/experiment')
+api.add_resource(ExperimentList, '/experimentlist')
+
 api.add_resource(IncidentList, '/incidents')
 api.add_resource(Incident, '/incident')
 
