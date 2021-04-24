@@ -9,12 +9,16 @@ os.environ["NLS_LANG"] = "GERMAN_GERMANY.UTF8"
 #Get the oracle database connection information
 db_config = ConfigParser.SafeConfigParser()
 db_config.read(os.path.join(root_folder,'config/connection.conf'))
+db_dialect = db_config.get('db','dialect')
+db_driver = db_config.get('db','driver')
 db_hostname = db_config.get('db', 'host')
 db_user = db_config.get('db', 'user')
 db_password = db_config.get('db', 'password')
 db_port = db_config.get('db', 'port')
-db_sid = db_config.get('db', 'sid')
-SQLALCHEMY_DATABASE_URI = 'oracle://%s:%s@%s:%s/%s' % (db_user, db_password, db_hostname, db_port, db_sid)
+db_database = db_config.get('db', 'database')
+#SQLALCHEMY_DATABASE_URI = 'oracle://%s:%s@%s:%s/%s' % (db_user, db_password, db_hostname, db_port, db_sid)
+SQLALCHEMY_DATABASE_URI = "{}+{}://{}:{}@{}:{}/{}?charset=utf8".format(db_dialect,db_driver,db_user,db_password,db_hostname,db_port,db_database)
+
 
 print(SQLALCHEMY_DATABASE_URI)
 print(db_hostname)

@@ -19,7 +19,7 @@ Werkzeug         1.0.1
 wheel            0.36.2
 wincertstore     0.2
 
-### 安装 flask_restful, flask, flask-sqlalchemy, cx-Oracle==7.3
+### 安装 flask_restful, flask, flask-sqlalchemy, cx-Oracle==7.3 pymysql
 
 ### git clone 
 
