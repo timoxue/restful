@@ -79,4 +79,10 @@ a.order_time , a.remarks  , a.test_item , a.contract_id , a.sample_name , a.samp
 a.sample_num, sum(case when d.component_status1  = 1  then 1 else 0 end) in_experiment, 
 sum(case when d.component_status1  = 2  then 1 else 0 end) is_finish from sfincident.program a  
 JOIN sfincident.components d ON d.order_number = a.order_number 
-GROUP BY a.pro_name, a.pro_id, a.task_id, a.task_form_id, a.ORDER_ID, a.program_code, a.program_id, a.task_name_book, a.order_time, a.remarks, a.test_item, a.contract_id, a.sample_name,  a.sample_material, a.sample_num, a.order_number
+GROUP BY a.pro_name, a.pro_id, a.task_id, a.task_form_id, a.ORDER_ID, a.program_code, a.program_id, a.task_name_book, a.order_time, a.remarks, a.test_item, a.contract_id, a.sample_name,  a.sample_material, a.sample_num, a.order_number;
+
+CREATE OR REPLACE VIEW sfincident.PROGRAM_PROCESS AS
+SELECT  a.pro_name, a.pro_id , a.order_number, 
+c.incident_id, count(*) as sumprocess,count( if( c.process_status = 4 ,1,null)  = 0) as completed,count( if( c.process_status = 0 ,1,null)  = 0) as inprocess
+from sfincident.program a right join sfincident.incidents b ON b.order_number = a.order_number
+left JOIN sfincident.processes c ON c.incident_id = b.incident_id group by pro_id,pro_name,order_number,incident_id;

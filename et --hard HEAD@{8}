@@ -1,0 +1,71 @@
+[33mb7fcc96[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: commit: mysql
+[33m483b1a2[m HEAD@{1}: commit: oracle version
+[33ma407afb[m HEAD@{2}: commit: add incident logic
+[33m3307303[m HEAD@{3}: commit: add reportFailure
+[33m2a62efb[m HEAD@{4}: commit: add loadComponent
+[33mab83373[m HEAD@{5}: pull: Merge made by the 'recursive' strategy.
+[33mc0efe9a[m HEAD@{6}: commit: add ruleModel
+[33m4191ea9[m HEAD@{7}: commit: change file model add filetemplate model
+[33m27a7a12[m HEAD@{8}: commit: change file model add filetemplate model
+[33mb79d133[m HEAD@{9}: commit (merge): merge
+[33m0bde7b3[m HEAD@{10}: commit: change file id field
+[33m9fc8153[m HEAD@{11}: pull: Merge made by the 'recursive' strategy.
+[33ma9ab832[m HEAD@{12}: commit: add reset password
+[33ma8ab3d4[m HEAD@{13}: commit: add getfile
+[33mc0b8172[m HEAD@{14}: pull: Fast-forward
+[33m11581a2[m HEAD@{15}: commit: add component status change and messagetxt model
+[33m8cfe3f4[m HEAD@{16}: commit: Instore.py
+[33meb369eb[m HEAD@{17}: commit: add compoenet status
+[33mc77c5a6[m HEAD@{18}: commit: change component.py
+[33m923861b[m HEAD@{19}: pull: Merge made by the 'recursive' strategy.
+[33m6475d0b[m HEAD@{20}: commit: add new message action
+[33mbf1c08b[m HEAD@{21}: commit: add message model and router
+[33m2169349[m HEAD@{22}: commit: change incident post
+[33m1f18f11[m HEAD@{23}: commit: add incidentOver and change processList get
+[33mac2f986[m HEAD@{24}: commit: add incident status filed
+[33m92e459c[m HEAD@{25}: pull: Fast-forward
+[33m020d16c[m HEAD@{26}: pull: Fast-forward
+[33mf84d7a2[m HEAD@{27}: commit: process.py
+[33maf23ba8[m HEAD@{28}: commit (merge): merge file
+[33m263bbe3[m HEAD@{29}: commit: process.py
+[33me535365[m HEAD@{30}: pull: Merge made by the 'recursive' strategy.
+[33m650e18e[m HEAD@{31}: commit: change process
+[33mda9a966[m HEAD@{32}: pull: Merge made by the 'recursive' strategy.
+[33mb5c9551[m HEAD@{33}: commit: change incident
+[33m01adda4[m HEAD@{34}: commit (merge): merge incident
+[33m685ceb1[m HEAD@{35}: commit: add overview incident
+[33mafc1502[m HEAD@{36}: pull: Fast-forward
+[33m30dbf19[m HEAD@{37}: pull: Fast-forward
+[33m4a524f4[m HEAD@{38}: commit: change process
+[33m704832c[m HEAD@{39}: pull: Merge made by the 'recursive' strategy.
+[33m29e565c[m HEAD@{40}: pull: Merge made by the 'recursive' strategy.
+[33mde74ab6[m HEAD@{41}: pull: Merge made by the 'recursive' strategy.
+[33m77ee371[m HEAD@{42}: commit: add create name on incident,program
+[33m5c52e24[m HEAD@{43}: pull: Fast-forward
+[33m05c745f[m HEAD@{44}: commit: add ignore
+[33m69bc63a[m HEAD@{45}: commit: change component table ,start.py
+[33m2623f3e[m HEAD@{46}: pull: Merge made by the 'recursive' strategy.
+[33m94b2f40[m HEAD@{47}: commit: change instore and program table
+[33m9d0c39f[m HEAD@{48}: commit: add new progect api dump json
+[33m4d4e373[m HEAD@{49}: commit (merge): merger confict
+[33m16e1297[m HEAD@{50}: commit: change datetime on models
+[33me7f5591[m HEAD@{51}: pull: Fast-forward
+[33m10bc6e6[m HEAD@{52}: commit: change componets table
+[33m844f57b[m HEAD@{53}: pull: Fast-forward
+[33m20fa7d8[m HEAD@{54}: commit: add program view get post method
+[33m9bf735d[m HEAD@{55}: commit: add program view
+[33m6326f7d[m HEAD@{56}: commit: sql
+[33me93e678[m HEAD@{57}: commit: add new function
+[33mf6d39f7[m HEAD@{58}: pull: Merge made by the 'recursive' strategy.
+[33ma4d8788[m HEAD@{59}: pull: Merge made by the 'recursive' strategy.
+[33md473db9[m HEAD@{60}: commit: add instore table
+[33mface9f2[m HEAD@{61}: pull: Merge made by the 'recursive' strategy.
+[33m2fa4381[m HEAD@{62}: pull: Merge made by the 'recursive' strategy.
+[33m41a4949[m HEAD@{63}: commit: program project
+[33m4611e2b[m HEAD@{64}: commit: kerry commit bug
+[33m681482b[m HEAD@{65}: pull --progress origin: Fast-forward
+[33mcb2ef9b[m HEAD@{66}: pull: Fast-forward
+[33m2543fe1[m HEAD@{67}: commit: add project program
+[33m5d94a9d[m HEAD@{68}: commit: add os encodeing setting
+[33m5fbd5c2[m HEAD@{69}: commit: add cors
+[33m5ea67c3[m HEAD@{70}: commit: add post put

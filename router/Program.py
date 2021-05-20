@@ -12,10 +12,12 @@ from flask_jwt import JWT, jwt_required, current_identity
 from sqlalchemy.sql import func
 import json
 import datetime
+import decimal
 from models.db import app
 
+
 class Program(Resource):
-    #@jwt_required()
+    # @jwt_required()
     def get(self, task_id):
         # print(current_identity)
         #joined_table = db.session.query(ProgramModel, ProjectModel,func.sum(InstoreModel.is_num-InstoreModel.in_store_num).label('w_sum')).outerjoin(ProjectModel).outerjoin(InstoreModel,InstoreModel.program_code == ProgramModel.program_code).filter(ProgramModel.task_id==task_id).group_by(ProgramModel, ProjectModel)
@@ -25,9 +27,9 @@ class Program(Resource):
         #result = Combined(ProgramModel, ProjectModel,{"sum":0}).exclude(['id'], ['id']).to_dict(joined_table)
         # sql =
         data = db.session.execute(
-             'SELECT * FROM PROGRAM_VIEW WHERE TASK_ID = (:id)', {"id":task_id}
+            'SELECT * FROM PROGRAM_VIEW WHERE TASK_ID = (:id)', {"id": task_id}
         ).fetchone()
-        #print(data)
+        # print(data)
         result = dict(zip(data.keys(), data))
         if result:
             return result
@@ -39,14 +41,15 @@ class Program(Resource):
         db.session.commit()
         return Success.message, Success.code
 
+
 class DateEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return obj.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(obj, decimal.Decimal):
+            return float(obj)
         else:
             return json.JSONEncoder.default(self, obj)
-
-
 
 
 class ProgramList(Resource):
@@ -57,29 +60,27 @@ class ProgramList(Resource):
         #print (type(instore_table))
         #data = [dict(zip(result.keys(), result)) for result in instore_table]
 
-        #joined_table = db.session.query(ProgramModel, func.sum(InstoreModel.is_num-InstoreModel.in_store_num).label(
-            #'w_sum')).outerjoin(InstoreModel, InstoreModel.program_code == ProgramModel.program_code).group_by(ProgramModel).all()
+        # joined_table = db.session.query(ProgramModel, func.sum(InstoreModel.is_num-InstoreModel.in_store_num).label(
+        # 'w_sum')).outerjoin(InstoreModel, InstoreModel.program_code == ProgramModel.program_code).group_by(ProgramModel).all()
         #joined_table = joined_table.query()
-        #print((joined_table))
+        # print((joined_table))
         # test1
         # result = Combined(
         #     ProgramModel, InstoreModel.is_num).to_dict(joined_table)
         data = db.session.execute(
-             'SELECT * FROM PROGRAM_VIEW WHERE RES_NAME = (:USER) ORDER BY create_time DESC' , {"USER":username}
+            'SELECT * FROM sfincident.PROGRAM_VIEW WHERE RES_NAME = (:USER) ORDER BY create_time DESC', {
+                "USER": username}
         ).fetchall()
-        
+
         results = [dict(zip(result.keys(), result)) for result in data]
-       
+        print(results)
         str = json.dumps(results, cls=DateEncoder)
         result = json.loads(str)
         return {'data': result}
 
-
-
-       
     @jwt_required()
     def post(self):
-    
+
         # print(json.load(request.json))
         username = current_identity.to_dict()['username']
         program = ProgramModel()
@@ -96,6 +97,7 @@ class ProgramList(Resource):
         db.session.commit()
         return Success.message, Success.code
 
+
 @app.route('/selectPrograms')
 def programsParameters():
     programs = [data.to_dict() for data in ProgramModel.query.all()]
@@ -107,5 +109,5 @@ def programsParameters():
         obj['order_number'] = r['order_number']
         obj['program_code'] = r['program_code']
         data.append(obj)
-      
+
     return {'data': data}
