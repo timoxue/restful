@@ -35,10 +35,12 @@ class Program(db.Model, Serializrable):
     contract_id = db.Column(db.String(80))
     #样品名称
     sample_name = db.Column(db.String(80))
+    #项目材料
     sample_material = db.Column(db.String(80))
     sample_num = db.Column(db.String(80))
     #委托书id
     order_id = db.Column(db.Integer)
+    #创建项目时间
     create_time =  db.Column(db.DateTime, default=datetime.datetime.now)
     #创建项目账号
     create_name = db.Column(db.String(80))

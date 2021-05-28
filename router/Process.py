@@ -147,3 +147,21 @@ def overviewStatus():
 
     }
     return data
+
+@app.route('/getDashBoardProcess')
+
+def dashBoardProcess():
+
+    allIncident = ProcessModel.query.count() #分配给自己的工序
+    finishIncident = ProcessModel.query.filter(ProcessModel.process_status == 4).count() #已完成
+    assginIncident = ProcessModel.query.filter(ProcessModel.process_status == 2).count() #已分配且待领取
+    processIncident = ProcessModel.query.filter(ProcessModel.process_status == 3).count() #实验中
+    unassginIncident =  ProcessModel.query.filter(ProcessModel.process_status == 1).count()#待分配
+    data = {
+        "allIncident":allIncident,
+        "finishIncident":finishIncident,
+        "assginIncident":assginIncident,
+        "processIncident":processIncident,
+        "unassginIncident":unassginIncident
+    }
+    return data

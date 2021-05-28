@@ -10,7 +10,7 @@ class Instore(db.Model, Serializrable):
    
     id = db.Column(db.Integer, db.Sequence('id_seq'),primary_key=True,autoincrement=True)
     #入库类型
-    is_type = db.Column(db.Integer, nullable=False) #0,1,2 入库类型
+    is_type = db.Column(db.Integer, nullable=False) #0待测样品,1已完成样品,2问题样品 入库类型
     #入库时间
     in_date = db.Column(db.String(8),nullable = False)
     #大纲编号

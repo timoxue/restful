@@ -10,3 +10,7 @@ class NotUnique:
 class NotFound:
     code = 404
     message = {'message': 'Not Found'}
+
+class NotAllow:
+    code = 500
+    message = {'message': 'Not Allow'}
