@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from warnings import resetwarnings
+
+from flask.wrappers import Response
 from models import instore
 from models import program
 from models.instore import Instore
@@ -65,8 +67,9 @@ def scanCode():
 @app.route("/comOverview",methods=['GET'])
 def comOverview():
     componentCount = db.session.query(ComponentModel).count()
-    componentFinish = db.session.query(ComponentModel).filter(ComponentModel.component_status == 6).filter(ComponentModel.component_status == 1).count() #成品
-    componentOut = db.session.query(ComponentModel).filter(ComponentModel.component_status == 6).filter(ComponentModel.component_status == 2).count() #交付
+    componentFinish = db.session.query(ComponentModel).filter(ComponentModel.component_status1 == 6).count() #成品出库或者入库
+    componentOut = db.session.query(ComponentModel).filter(ComponentModel.component_status1 == 6).filter(ComponentModel.component_status == 2).count() #交付
+    
     incidents = db.session.query(IncidentModel).count()
     incidentsFinish = db.session.query(IncidentModel).filter(IncidentModel.incident_status == 2).count()
     programAll = db.session.query(ProgramModel).count()
@@ -86,6 +89,56 @@ def comOverview():
         'programFinish':results[0]['count']
     }
 
+@app.route("/checkComponent",methods=['POST'])
+def checkComponent():
+    request_data = request.json
+    component_unique_id = request_data['component_unique_id']
+    is_type = request_data['is_type']
+    conditions = []
+    if 'id' in request_data:
+        instore_id = request_data['id']
+        conditions.append(ComponentModel.instore_id == instore_id)
+    if 'order_number' in request_data:
+        order_number = request_data['order_number']
+        conditions.append(ComponentModel.order_number == order_number)
+    u = db.session.query(ComponentModel).filter(ComponentModel.component_unique_id == component_unique_id).first()
+    if u is None:
+        resp = jsonify({'message':'试验件编码不存在，请重新扫码'})
+        # resp = Response({
+        #      'message':'试验件编码不存在，请重新扫码'
+        # })
+        abort(resp)
+    else:
+        u = db.session.query(ComponentModel).filter(*conditions).filter(ComponentModel.component_unique_id == component_unique_id).first()
+        
+        if u is None:
+            resp = jsonify({'message':"试验件编码在当前委托单编号号下不存在！"})
+            abort(resp)
+        
+        if is_type == 0:  # 待测样品
+            status = None
+            status1 = None
+
+        elif is_type == 1:  # 1已完成样品
+            status = 3 
+            status1 = 6 #成品或者完成样品
+
+        elif is_type == 2:  # 问题样品
+            status = 5
+            status1 = 5 #成品或者完成样品
+        print(status)
+
+
+        if u.component_status1 != status and u.component_status1 != status1:
+              # 错误的入库类型
+            resp = jsonify({'message':'试验件不符合入库或出库标准，请检查！'})
+            # resp = Response({
+            #     'message':'试验件入符合入库标准，请检查！'
+            # })
+            abort(resp)
+        else:
+            return {'message': '试验件符合入库或出库标准'},Success.code
+          
 
 
 @app.route('/addExComponent/<order_number>')

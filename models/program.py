@@ -16,11 +16,11 @@ class Program(db.Model, Serializrable):
     #委托单号
     order_number = db.Column(db.String(80),nullable = False)
     #任务书编码
-    task_id = db.Column(db.String(80),nullable = False) 
+    task_id = db.Column(db.String(80)) 
     #任务书id
     task_form_id = db.Column(db.Integer)
     #试验大纲编码
-    program_code = db.Column(db.String(80),nullable = False)  
+    program_code = db.Column(db.String(80))  
     #试验大纲id
     program_id = db.Column(db.Integer)
     #任务书名称
@@ -39,7 +39,7 @@ class Program(db.Model, Serializrable):
     sample_material = db.Column(db.String(80))
     sample_num = db.Column(db.String(80))
     #委托书id
-    order_id = db.Column(db.Integer)
+    order_id = db.Column(db.Integer) #force to have
     #创建项目时间
     create_time =  db.Column(db.DateTime, default=datetime.datetime.now)
     #创建项目账号

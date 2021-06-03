@@ -38,7 +38,7 @@ class OutstoreList(Resource):
     def get(self):
         username = current_identity.to_dict()['username']
         results = OutstoreModel.query.filter(OutstoreModel.create_name == username).join(ProgramModel,OutstoreModel.order_number == ProgramModel.order_number).\
-        with_entities(OutstoreModel.id,OutstoreModel.is_num,OutstoreModel.is_status,OutstoreModel.is_type,OutstoreModel.location,OutstoreModel.order_number,OutstoreModel.in_store_num,OutstoreModel.check_name,OutstoreModel.check_time,OutstoreModel.check_form_id,ProgramModel.pro_name,OutstoreModel.in_date,OutstoreModel.store_name,ProgramModel.task_name_book).order_by(OutstoreModel.in_date.desc()).all()
+        with_entities(OutstoreModel.id,OutstoreModel.is_num,OutstoreModel.is_type,OutstoreModel.order_number,ProgramModel.pro_name,OutstoreModel.out_date,OutstoreModel.out_name).order_by(OutstoreModel.out_date.desc()).all()
         response_data = [dict(zip(result.keys(), result)) for result in results]
         return {'data': response_data}
 
@@ -53,9 +53,9 @@ class OutstoreList(Resource):
         db.session.add(Outstore)
         db.session.commit()
         #新建入库申请
-        data = db.session.query(ProgramModel.create_name).join(OutstoreModel,OutstoreModel.order_number == ProgramModel.order_number).first()
-        data = dict(zip(data.keys(), data))
-        MessageList().newMeassge(0,Outstore.create_name,data['create_name'])
+        # data = db.session.query(ProgramModel.create_name).join(OutstoreModel,OutstoreModel.order_number == ProgramModel.order_number).first()
+        # data = dict(zip(data.keys(), data))
+        # MessageList().newMeassge(0,Outstore.create_name,data['create_name'])
         return Success.message, Success.code
 
     def put(self):
@@ -66,42 +66,3 @@ class OutstoreList(Resource):
         return Success.message, Success.code
 
 
-@app.route('/confirmOutstore/<order_number>')
-def getConfirm(order_number):
-
-    u = db.session.query(OutstoreModel).filter(
-        OutstoreModel.order_number == order_number).filter(OutstoreModel.is_status == 0).all()
-    result = [data.to_dict() for data in u]
-    return {'data': result}
-
-
-@app.route('/confirmOutstore', methods=['POST'])
-
-@jwt_required()
-def confirmStore():
-    username = current_identity.to_dict()['username']
-    value = {}
-    value['order_number'] = request.json['order_number']
-    value['id'] = request.json['id']
-
-    #value['is_num'] = request.json['is_num'] 不改变入库数量 
-    value['is_status'] = request.json['status'] #审核状态
-    value['check_name'] = request.json['check_name']
-    value['check_time'] = request.json['check_time']
-    if value['is_status'] == 1: #申请入库成功
-        value['sign_check_form_id'] = request.json['sign_check_form_id']
-    OutstoreModel.query.filter_by(order_number=request.json['order_number'], id=request.json['id']).update(value)
-    
-    db.session.commit()
-
-    #new a 入库申请通过/驳回
-    data = db.session.query(OutstoreModel.create_name).filter_by(order_number=request.json['order_number'], id=request.json['id']).first()
-    data = dict(zip(data.keys(), data))
-    print (data)
-    if  value['is_status'] == 1:
-
-        MessageList().newMeassge(5,username,data['create_name'])
-    elif  value['is_status'] == 2:
-        MessageList().newMeassge(6,username,data['create_name'])
-
-    return 'Update %s store successfully' % request.json['order_number']

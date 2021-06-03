@@ -24,5 +24,7 @@ class FileTemp(Resource):
     def get(self,f_key):
         fileTemp = FileTempModel.query.filter_by(f_key=f_key).order_by(FileTempModel.create_at.desc()).first()
         print (fileTemp)
+        if fileTemp is None:
+            return {'f_key':None,'f_id':None}, Success.code
         data = fileTemp.to_dict()
         return data

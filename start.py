@@ -5,6 +5,7 @@ from router.User import UserList, User
 from router.Project import Project, ProjectList
 from router.Program import Program, ProgramList
 from router.InStore import Instore,InstoreList
+from router.outStore import Outstore,OutstoreList
 from router.Component import Component
 from router.Experiment import Experiment,ExperimentList
 from router.Incident import Incident,IncidentList
@@ -45,6 +46,9 @@ api.add_resource(ProgramList, '/programs')
 api.add_resource(Program, '/program/<string:task_id>')
 
 api.add_resource(InstoreList, '/instores')
+
+api.add_resource(OutstoreList, '/outstores')
+
 api.add_resource(Instore, '/instore/<id>')
 api.add_resource(Component, '/components')
 api.add_resource(Experiment, '/experiment')

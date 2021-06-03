@@ -129,7 +129,7 @@ class IncidentList(Resource):
         join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
         with_entities(ProgramModel.pro_name, ProgramModel.pro_id,
                
-                IncidentModel.incident_id, IncidentModel.create_name, 
+                IncidentModel.incident_id, IncidentModel.create_name, ProgramModel.order_number,
                 ProcessModel.process_id, ProcessModel.process_name,  IncidentModel.create_at,   ProjectModel.finish_time, ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
         #incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
 

@@ -19,11 +19,10 @@ class outStore(db.Model, Serializrable):
     order_number = db.Column(db.String(80),nullable = False)
     #试验件数量
     is_num = db.Column(db.Integer, nullable=False)
-    #出库执行人
+    #领取人
     out_name = db.Column(db.String(80))
     create_name = db.Column(db.String(80),nullable = False)
-    #领取人
-    store_name = db.Column(db.String(80),nullable = False)
+   
     #备注
     remarks =  db.Column(db.String(120))
     create_time = db.Column(db.DateTime, default=datetime.datetime.now)

@@ -15,7 +15,7 @@ from flask_jwt import JWT, jwt_required, current_identity
 
 #import logging
 
-ALLOWED_EXTENSIONS = ['doc', 'docx', 'xlsx', 'txt', 'ppt', 'pptx']
+ALLOWED_EXTENSIONS = ['doc', 'docx', 'xlsx', 'txt', 'ppt', 'pptx','png']
 
 class File(Resource):
 
@@ -47,6 +47,7 @@ class File(Resource):
                 'f_owner': username,
                 'is_delete': False
             }
+            print (file_json)
             file_to_save = FileModel().from_dict(file_json)
             db.session.add(file_to_save)
             db.session.commit()
