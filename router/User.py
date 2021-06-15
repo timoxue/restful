@@ -3,7 +3,8 @@ from flask import Flask, jsonify, abort, request
 from models.user import User as UserModel
 #from models.user import UserModel
 from models.db import db
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound,NotUnique,DBError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
 
 class User(Resource):
@@ -17,8 +18,17 @@ class User(Resource):
     def delete(self, user_id):
         user = UserModel.query.filter_by(username=user_id).first()
         db.session.delete(user)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
+
     def put (self,user_id):
         password = request.json['password']
         u_status = request.json['u_status']
@@ -28,7 +38,15 @@ class User(Resource):
             "u_status":u_status
         })
         
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code    
 
 class UserList(Resource):
@@ -49,7 +67,15 @@ class UserList(Resource):
         user = user.from_dict(request.json)
         
         db.session.add(user)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
 

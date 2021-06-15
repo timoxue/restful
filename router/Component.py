@@ -13,9 +13,10 @@ from models.Process import Process as ProcessModel
 from router.InStore import Instore as Instore
 from models.db import app
 from sqlalchemy import or_  
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from models.db import db
-from router.Status import Success, NotFound,NotAllow
+from router.Status import Success, NotFound,NotAllow, NotUnique,DBError
 import datetime
 
 
@@ -25,7 +26,15 @@ class Component(Resource):
             ComponentModel.__table__.insert(),
             request.json['data']
         )
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+             print(e)
+             return DBError.message, DBError.code
         return Success.message, Success.code
 
 

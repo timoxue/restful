@@ -10,7 +10,8 @@ from models import Combined
 from models.db import app
 
 from models.db import db
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound,NotUnique,DBError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
 
 
@@ -26,7 +27,15 @@ class Outstore(Resource):
     def delete(self, id):
         Outstore = OutstoreModel.query.filter_by(id=id).first()
         db.session.delete(Outstore)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
 
@@ -51,7 +60,15 @@ class OutstoreList(Resource):
         Outstore = Outstore.from_dict(request.json)
         Outstore.create_name = username
         db.session.add(Outstore)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         #新建入库申请
         # data = db.session.query(ProgramModel.create_name).join(OutstoreModel,OutstoreModel.order_number == ProgramModel.order_number).first()
         # data = dict(zip(data.keys(), data))
@@ -62,7 +79,15 @@ class OutstoreList(Resource):
         pro_name = request.json['id']
         Outstore = OutstoreModel.query.filter_by(id=id).first()
         Outstore = Outstore.from_dict(request.json)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
 

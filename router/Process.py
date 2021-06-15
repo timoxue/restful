@@ -16,7 +16,8 @@ from router.Message import MessageList
 import json
 import datetime
 import decimal
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound,NotUnique,DBError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import datetime
 from sqlalchemy.sql import func
 
@@ -92,7 +93,15 @@ class ProcessStatus(Resource):
             #改变incident的status 0=>1
             IncidentModel.query.filter(IncidentModel.incident_id==incident_id).update({'incident_status': 1})
 
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
 
@@ -127,7 +136,15 @@ class CheckProcessStatus(Resource):
             ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
             IncidentModel.query.filter(IncidentModel.incident_id==incident_id).update({'incident_status': 2})
             #ComponentModel.query.filter(ComponentModel.process_id==process_id).filter(ComponentModel.component_status1 == 3).update({'component_status1':3})
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
 @app.route('/getOverviewProStatus')

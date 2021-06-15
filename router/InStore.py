@@ -10,7 +10,8 @@ from models import Combined
 from models.db import app
 
 from models.db import db
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound,NotUnique,DBError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
 
 
@@ -60,7 +61,15 @@ class InstoreList(Resource):
         instore = instore.from_dict(request.json)
         instore.create_name = username
         db.session.add(instore)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         #新建入库申请
         data = db.session.query(ProgramModel.create_name).join(InstoreModel,InstoreModel.order_number == ProgramModel.order_number).first()
         data = dict(zip(data.keys(), data))
@@ -71,7 +80,15 @@ class InstoreList(Resource):
         pro_name = request.json['id']
         instore = InstoreModel.query.filter_by(id=id).first()
         instore = instore.from_dict(request.json)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
 
@@ -101,7 +118,15 @@ def confirmStore():
         value['sign_check_form_id'] = request.json['sign_check_form_id']
     InstoreModel.query.filter_by(order_number=request.json['order_number'], id=request.json['id']).update(value)
     
-    db.session.commit()
+    #db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError as e:
+        print(e)
+        return NotUnique.message, NotUnique.code
+    except SQLAlchemyError as e: 
+        print(e)
+        return DBError.message, DBError.code
 
     #new a 入库申请通过/驳回
     data = db.session.query(InstoreModel.create_name).filter_by(order_number=request.json['order_number'], id=request.json['id']).first()

@@ -9,9 +9,10 @@ from models.db import app
 import os
 from os.path import join, dirname, realpath
 import datetime
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound, NotUnique,DBError
 from flask import send_file, send_from_directory, safe_join, abort
 from flask_jwt import JWT, jwt_required, current_identity
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 #import logging
 
@@ -50,7 +51,15 @@ class File(Resource):
             print (file_json)
             file_to_save = FileModel().from_dict(file_json)
             db.session.add(file_to_save)
-            db.session.commit()
+            #db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError as e:
+                print(e)
+                return NotUnique.message, NotUnique.code
+            except SQLAlchemyError as e: 
+                print(e)
+                return DBError.message, DBError.code
             #logging.info("successfully insert a file record: " +  [k +": "+ v for (k,v) in  dict.items()])
             handler.upload(file, str(file_to_save.id) + "." + filename.rsplit('.', 1)[-1].lower())
             #logging.info("successfully save a file as: " +  str(file_to_save.id) + "." + filename.rsplit('.', 1)[1].lower())

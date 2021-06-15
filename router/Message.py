@@ -8,7 +8,8 @@ from models.MessageTXT import Messagetxt as MessagetxtModel
 import json
 import datetime
 from models.db import db
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound,NotUnique,DBError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
 from models.db import app
 
@@ -28,7 +29,15 @@ class Message(Resource):
         MessageModel.query.filter(MessageModel.message_id == message_id).update({
             "message_satus":1
         })
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
 class DateEncoder(json.JSONEncoder):
@@ -37,6 +46,7 @@ class DateEncoder(json.JSONEncoder):
             return obj.strftime('%Y-%m-%d %H:%M:%S')
         else:
             return json.JSONEncoder.default(self, obj)
+
 class MessageList(Resource):
     @jwt_required()
     def get(self):
@@ -70,7 +80,15 @@ class MessageList(Resource):
         # elif type == 6:
         #      message.message_notes = '您有一条入库申请驳回消息'                
         db.session.add(message)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
 
