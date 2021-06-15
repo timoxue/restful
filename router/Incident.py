@@ -144,6 +144,7 @@ class IncidentList(Resource):
 
 @app.route('/getOverviewIncStatus')
 def overviewIncidentStatus():
+    username = current_identity.to_dict()['username']
     allIncident = IncidentModel.query.count()
     finishIncident = IncidentModel.query.filter(IncidentModel.incident_status == 2).count()
     unprocessIncident = IncidentModel.query.filter(IncidentModel.incident_status == 0).count()

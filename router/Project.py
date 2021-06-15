@@ -75,6 +75,23 @@ def getProjects():
         data.append(obj)
     return {'data': data}
 
+@app.route('/getProjectsNoAuth')
+def getProjectsNoAuth():
+    data = db.session.execute(
+        "select * from PROGRAM_VIEW  where order_number <> '' "
+         
+        ).fetchall()
+    results = [dict(zip(result.keys(), result))  for result in data ]
+    #projects = [data.to_dict() for data in ProjectModel.query.filter_by(res_name=username).all()]
+    data = []
+    obj = {}
+    for r in results:
+        obj = {}
+        obj['key'] = r['order_number']
+        obj['value'] = r['project_name']
+        data.append(obj)
+    return {'data': data}
+
 
 @app.route('/getCompanys')
 def getCompanys():

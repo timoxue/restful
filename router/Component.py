@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from warnings import resetwarnings
-
 from flask.wrappers import Response
 from models import instore
 from models import program
@@ -14,6 +12,7 @@ from models.project import Project as ProjectModel
 from models.Process import Process as ProcessModel
 from router.InStore import Instore as Instore
 from models.db import app
+from sqlalchemy import or_  
 
 from models.db import db
 from router.Status import Success, NotFound,NotAllow
@@ -67,26 +66,25 @@ def scanCode():
 @app.route("/comOverview",methods=['GET'])
 def comOverview():
     componentCount = db.session.query(ComponentModel).count()
-    componentFinish = db.session.query(ComponentModel).filter(ComponentModel.component_status1 == 6).count() #成品出库或者入库
-    componentOut = db.session.query(ComponentModel).filter(ComponentModel.component_status1 == 6).filter(ComponentModel.component_status == 2).count() #交付
-    
-    incidents = db.session.query(IncidentModel).count()
-    incidentsFinish = db.session.query(IncidentModel).filter(IncidentModel.incident_status == 2).count()
-    programAll = db.session.query(ProgramModel).count()
-    data = db.session.execute(
-            'SELECT count(*) as count FROM sfincident.PROGRAM_VIEW WHERE sample_num = is_finish'
-        ).fetchall()
+    componentInstore = db.session.query(ComponentModel).filter(ComponentModel.component_status == 1).filter(ComponentModel.component_status1 == None).count() #样品入库
+    componentProcess = db.session.query(ComponentModel).filter(or_(ComponentModel.component_status1 != 5,ComponentModel.component_status1 != 6)).filter(ComponentModel.component_status == 2).count() #实验中
+    componentDelivered = db.session.query(ComponentModel).filter(ComponentModel.component_status1 == 6).filter(ComponentModel.component_status == 1).count() #待交付
+   
+    # incidents = db.session.query(IncidentModel).count()
+    # incidentsFinish = db.session.query(IncidentModel).filter(IncidentModel.incident_status == 2).count()
+    # programAll = db.session.query(ProgramModel).count()
+    # data = db.session.execute(
+    #         'SELECT count(*) as count FROM sfincident.PROGRAM_VIEW WHERE sample_num = is_finish'
+    #     ).fetchall()
 
-    results = [dict(zip(result.keys(), result)) for result in data]
-    print(results)
+    # results = [dict(zip(result.keys(), result)) for result in data]
+    # print(results)
     return {
         'componentCount':componentCount,
-        'componentFinish':componentFinish,
-        'componentOut':componentOut,
-        'incidents':incidents,
-        'incidentsFinish':incidentsFinish,
-        'programAll':programAll,
-        'programFinish':results[0]['count']
+        'componentInstore':componentInstore,
+        'componentProcess':componentProcess,
+        'componentDelivered':componentDelivered
+        
     }
 
 @app.route("/checkComponent",methods=['POST'])
@@ -290,7 +288,89 @@ class ReportFailureComponent(Resource):
 def componentTime():
 
     data = db.session.execute(
-            'SELECT *  FROM sfincident.component_series'
+            'SELECT *  FROM sfincident.component_series limit 7'
+        ).fetchall()
+
+    results = [dict(zip(result.keys(), result)) for result in data]
+    print(results)
+    return {
+        'data':results
+    }
+
+
+@app.route('/componentDetail/<component_unique_id>')
+def componentDetail(component_unique_id):
+    component = ComponentModel.query.filter(ComponentModel.component_unique_id == component_unique_id).join(ProcessModel,ProcessModel.process_id == ComponentModel.process_id).join(IncidentModel,IncidentModel.order_number == ComponentModel.order_number)\
+         .join(ProgramModel, ProgramModel.order_number == IncidentModel.order_number) \
+        .join(ProjectModel, ProjectModel.id == ProgramModel.pro_id) \
+        .with_entities(ComponentModel.component_unique_id,ProgramModel.pro_name,ProgramModel.task_name_book,
+        ProjectModel.create_name,
+        ComponentModel.process_id,ComponentModel.component_status,ComponentModel.component_status1,
+        ComponentModel.create_at,ComponentModel.experiment_owner,ComponentModel.incident_id,
+        ComponentModel.experimenter,ComponentModel.process_owner,ComponentModel.order_number,ComponentModel.instore_id,ProcessModel.start_time_d,ProcessModel.end_time_d,IncidentModel.create_name,IncidentModel.experi_project,IncidentModel.experi_rely,IncidentModel.experi_type)\
+        .first()
+    
+    process_id = component.process_id
+    dis_process = ProcessModel.query.filter(ProcessModel.process_id == process_id) \
+            .join(IncidentModel, IncidentModel.incident_id == ProcessModel.incident_id) \
+            .join(ProgramModel, ProgramModel.order_number == IncidentModel.order_number) \
+            .join(ProjectModel, ProjectModel.id == ProgramModel.pro_id) \
+            .with_entities(ProgramModel.pro_name, ProgramModel.pro_id, ProgramModel.order_number, ProgramModel.task_id, ProgramModel.program_id,
+                           ProjectModel.finish_time,
+                           IncidentModel.incident_id, IncidentModel.create_name, IncidentModel.experi_type,
+                           ProcessModel.process_id, ProcessModel.process_name,
+                           ProcessModel.start_time_d, ProcessModel.end_time_d,
+                           ProcessModel.process_name, ProcessModel.process_status, ProcessModel.experimenter, ProcessModel.process_owner, ProcessModel.experiment_sheet_id).all()
+    #print(dis_process)
+    response_data = [dict(zip(result.keys(), result))
+                         for result in dis_process]
+    print (response_data)
+    for entity in response_data:
+        entity['start_time_d'] = datetime.datetime.strftime(
+            entity['start_time_d'], '%Y-%m-%d %H:%M:%S')
+        entity['end_time_d'] = datetime.datetime.strftime(
+            entity['end_time_d'], '%Y-%m-%d %H:%M:%S')
+    response_data = response_data[0]
+        # 2 Get group process under the same incident
+    group_incident_id = response_data['incident_id']
+    group_processes = ProcessModel.query.filter(
+            ProcessModel.incident_id == group_incident_id).order_by(ProcessModel.step_number).all()
+    co_workers = set()
+    group_processes_names = []
+
+
+    component = dict(zip(component.keys(), component))
+    for g_p in group_processes:
+        co_workers.add(g_p.process_owner)
+        processObj = {}
+        processObj['process_name'] = g_p.process_name
+        processObj['process_id'] = g_p.process_id
+        processObj['process_owner'] = g_p.process_owner
+        group_processes_names.append(processObj)
+    #component = component.to_dict()
+    component['planIncidentStartTime'] = group_processes[0].start_time_d
+    component['planIncidentEndTime'] = group_processes[len(group_processes)-1].end_time_d
+    component['co_experimenter'] = list(co_workers)
+    component['processes'] = group_processes_names
+    #response_data['component_unique_id'] = component.component_unique_id
+    #response_data['component_status'] = component.component_status
+    #response_data['component_status1'] = component.component_status1
+
+    #print (component)
+
+    return {'data':component}
+
+@app.route('/componentId')
+def componentId():
+    result = ComponentModel.query.order_by(ComponentModel.update_at).first()
+    componentId = result.component_unique_id
+    return {
+        "component_unique_id":componentId
+    }
+@app.route('/componentEfficiency')
+def componentEfficiency():
+    data = db.session.execute(
+            'SELECT *  FROM SFINCIDENT.efficiency limit 10'
         ).fetchall()
 
     results = [dict(zip(result.keys(), result)) for result in data]

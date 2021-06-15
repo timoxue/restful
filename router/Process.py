@@ -1,7 +1,9 @@
 # encoding:UTF-8 
 
+from threading import Condition
 from flask_restful import Resource, Api, reqparse
 from flask import Flask, jsonify, abort, request
+from models import program
 from models.Process import Process as ProcessModel
 from models.Incident import Incident as IncidentModel
 from models.Component import Component as ComponentModel
@@ -11,9 +13,12 @@ from models.db import db
 from models.db import app
 from flask_jwt import JWT, jwt_required, current_identity
 from router.Message import MessageList
-
+import json
+import datetime
+import decimal
 from router.Status import Success, NotFound
 import datetime
+from sqlalchemy.sql import func
 
 class ProcessList(Resource):
     @jwt_required()
@@ -91,6 +96,14 @@ class ProcessStatus(Resource):
         return Success.message, Success.code
 
 
+class DateEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(obj, decimal.Decimal):
+            return float(obj)
+        else:
+            return json.JSONEncoder.default(self, obj)
 
 class CheckProcessStatus(Resource):
     def post(self):
@@ -147,21 +160,46 @@ def overviewStatus():
 
     }
     return data
+def get_count(q):
+    return q.with_entities(func.count()).scalar()
+@app.route('/getDashBoardProcess/<order_number>')
 
-@app.route('/getDashBoardProcess')
+def dashBoardProcess(order_number):
+    conditions = []
+    if order_number == 'All':
 
-def dashBoardProcess():
-
+        conditions = []
+    else:
+        conditions.append(ComponentModel.order_number == order_number)
+    inStore = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(ComponentModel.component_status == 1)) #已入库
+    inMeasure = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(ProcessModel.process_name.like("%" +"测量"+ "%")))
+    print(inMeasure)
+    #results = [dict(zip(result.keys(), result)) for result in inMeasure]
+    #print(results)
+    inPaste = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(ProcessModel.process_name.like("%" +"应变计粘贴"+ "%")))
+    inLossless = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(ProcessModel.process_name.like("%" +"无损"+ "%")))
+    inConditions = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(ProcessModel.process_name.like("%" +"环境调节"+ "%")))
+    inExp = ComponentModel.query.filter(ComponentModel.component_status == 2).count()
     allIncident = ProcessModel.query.count() #分配给自己的工序
     finishIncident = ProcessModel.query.filter(ProcessModel.process_status == 4).count() #已完成
     assginIncident = ProcessModel.query.filter(ProcessModel.process_status == 2).count() #已分配且待领取
     processIncident = ProcessModel.query.filter(ProcessModel.process_status == 3).count() #实验中
     unassginIncident =  ProcessModel.query.filter(ProcessModel.process_status == 1).count()#待分配
     data = {
-        "allIncident":allIncident,
-        "finishIncident":finishIncident,
-        "assginIncident":assginIncident,
-        "processIncident":processIncident,
-        "unassginIncident":unassginIncident
+        "inStore":inStore,
+        "inMeasure":inMeasure,
+         "inPaste":inPaste,
+         "inLossless":inLossless,
+         "inConditions":inConditions,
+         "inExp":inExp
     }
     return data
+
+@app.route('/processAlert')
+def processAlert():
+    data = db.session.execute('SELECT * FROM sfincident.PROCESS_ALERT').fetchall()
+    results = [dict(zip(result.keys(), result)) for result in data]
+    for entity in results:
+        entity['start_time_d'] = datetime.datetime.strftime(entity['start_time_d'], '%Y%m%d')
+        entity['end_time_d'] = datetime.datetime.strftime(entity['end_time_d'], '%Y%m%d')
+    return {'data': results}
