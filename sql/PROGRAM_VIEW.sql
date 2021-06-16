@@ -73,15 +73,7 @@ SELECT a.pro_name,
          left JOIN sfincident.PROGRAM_COMPONENT_VIEW b ON b.order_number = a.order_number;
 
 
-CREATE OR REPLACE VIEW 
-sfincident.PROGRAM_COMPONENT_VIEW AS SELECT  
-a.pro_name, a.pro_id , a.task_id , a.order_number,a.order_id, 
-a.task_form_id , a.program_code,  a.program_id , a.task_name_book,
-a.order_time , a.remarks  , a.test_item , a.contract_id , a.sample_name , a.sample_material ,  
-a.sample_num, sum(case when d.component_status1  = 2  then 1 else 0 end) in_experiment, 
-sum(case when d.component_status1  = 6  then 1 else 0 end) is_finish from sfincident.program a  
-JOIN sfincident.components d ON d.order_number = a.order_number 
-GROUP BY a.pro_name, a.pro_id, a.task_id, a.task_form_id, a.order_id, a.program_code, a.program_id, a.task_name_book, a.order_time, a.remarks, a.test_item, a.contract_id, a.sample_name,  a.sample_material, a.sample_num, a.order_number;
+
 
 CREATE OR REPLACE VIEW sfincident.PROGRAM_PROCESS AS
 SELECT  a.pro_name, a.pro_id ,

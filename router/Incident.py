@@ -143,12 +143,13 @@ class IncidentList(Resource):
 
 
 @app.route('/getOverviewIncStatus')
+@jwt_required()
 def overviewIncidentStatus():
     username = current_identity.to_dict()['username']
-    allIncident = IncidentModel.query.count()
-    finishIncident = IncidentModel.query.filter(IncidentModel.incident_status == 2).count()
-    unprocessIncident = IncidentModel.query.filter(IncidentModel.incident_status == 0).count()
-    processIncident = IncidentModel.query.filter(IncidentModel.incident_status == 1).count()
+    allIncident = IncidentModel.query.filter(IncidentModel.create_name == username).count()
+    finishIncident = IncidentModel.query.filter(IncidentModel.create_name == username).filter(IncidentModel.incident_status == 2).count()
+    unprocessIncident = IncidentModel.query.filter(IncidentModel.create_name == username).filter(IncidentModel.incident_status == 0).count()
+    processIncident = IncidentModel.query.filter(IncidentModel.create_name == username).filter(IncidentModel.incident_status == 1).count()
     data = {
         "allIncident":allIncident,
         "finishIncident":finishIncident,
