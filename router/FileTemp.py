@@ -10,7 +10,8 @@ from models.db import app
 import os
 from os.path import join, dirname, realpath
 import datetime
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound, NotUnique,DBError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask import send_file, send_from_directory, safe_join, abort
 from flask_jwt import JWT, jwt_required, current_identity
 
@@ -19,7 +20,15 @@ class FileTemp(Resource):
         fileTemp = FileTempModel()
         fileTemp = fileTemp.from_dict(request.json)
         db.session.add(fileTemp)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
     def get(self,f_key):
         fileTemp = FileTempModel.query.filter_by(f_key=f_key).order_by(FileTempModel.create_at.desc()).first()

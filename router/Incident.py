@@ -14,7 +14,8 @@ from flask_jwt import JWT, jwt_required, current_identity
 from router.Message import MessageList
 
 
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound, NotUnique,DBError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import datetime
 
 class Incident(Resource):
@@ -45,7 +46,15 @@ class Incident(Resource):
         #更改incident状态为已创建
         incident.incident_status = 0
         db.session.add(incident)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
 
         #5. update insert into process table
         list_l = len(process_list)
@@ -62,7 +71,15 @@ class Incident(Resource):
                 process_list[i]['process_status'] = 0
             p = ProcessModel().from_dict(process_list[i])
             db.session.add(p)
-            db.session.commit()
+            #db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError as e:
+                print(e)
+                return NotUnique.message, NotUnique.code
+            except SQLAlchemyError as e: 
+                print(e)
+                return DBError.message, DBError.code
             update_process_list.append(p)
 
         for i in range(list_l):
@@ -87,7 +104,15 @@ class Incident(Resource):
                 value['pre_process_id'] = update_process_list[i-1].process_id
                 value['pos_process_id'] = update_process_list[i+1].process_id
             ProcessModel.query.filter(ProcessModel.process_id==value['process_id']).update({'pre_process_id': value['pre_process_id'],'pos_process_id': value['pos_process_id']})
-            db.session.commit()
+            #db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError as e:
+                print(e)
+                return NotUnique.message, NotUnique.code
+            except SQLAlchemyError as e: 
+                print(e)
+                return DBError.message, DBError.code
 
         #6. update insert into Component table
 
@@ -105,7 +130,15 @@ class Incident(Resource):
             #del component_list[i]['create_at']
             #del component_list[i]['update_at']
             ComponentModel.query.filter(ComponentModel.id==component_list[i]['id']).update(value)
-            db.session.commit()
+            #db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError as e:
+                print(e)
+                return NotUnique.message, NotUnique.code
+            except SQLAlchemyError as e: 
+                print(e)
+                return DBError.message, DBError.code
 
         #new message
         MessageList().newMeassge(4,username,recipient_name)

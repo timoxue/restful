@@ -2,7 +2,8 @@ from flask_restful import Resource
 from flask import Flask, jsonify, abort, request
 from models.project import Project as ProjectModel
 from models.db import db
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound,NotUnique,DBError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
 from models.db import app
 from router.Message import MessageList
@@ -41,7 +42,15 @@ class ProjectList(Resource):
         project = project.from_dict(request.json)
         
         db.session.add(project)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
 
         #new message
         MessageList().newMeassge(7,project.create_name,project.res_name)
@@ -53,7 +62,15 @@ class ProjectList(Resource):
         pro_name = request.json['pro_name']
         project = ProjectModel.query.filter_by(pro_name=pro_name).first()
         project = project.from_dict(request.json)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
 @app.route('/getProjects')

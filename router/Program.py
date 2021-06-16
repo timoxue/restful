@@ -7,7 +7,8 @@ from models.db import app
 
 from models import Combined
 from models.db import db
-from router.Status import Success, NotFound
+from router.Status import Success, NotFound,NotUnique,DBError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
 from sqlalchemy.sql import func
 import json
@@ -39,6 +40,7 @@ class Program(Resource):
         program = ProgramModel.query.filter_by(task_id=task_id).first()
         db.session.delete(program)
         db.session.commit()
+        
         return Success.message, Success.code
 
 
@@ -87,14 +89,30 @@ class ProgramList(Resource):
         program = program.from_dict(request.json)
         program.create_name = username
         db.session.add(program)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
     def put(self):
         pro_name = request.json['pro_name']
         program = ProgramModel.query.filter_by(pro_name=pro_name).first()
         program = program.from_dict(request.json)
-        db.session.commit()
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
 
