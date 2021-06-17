@@ -22,19 +22,20 @@ import datetime
 
 class Component(Resource):
     def post(self):
-        db.session.execute(
-            ComponentModel.__table__.insert(),
-            request.json['data']
-        )
-        #db.session.commit()
         try:
-            db.session.commit()
+            db.session.execute(
+                ComponentModel.__table__.insert(),
+                request.json['data']
+            )
+        #db.session.commit()
+      
         except IntegrityError as e:
             print(e)
             return NotUnique.message, NotUnique.code
         except SQLAlchemyError as e: 
              print(e)
              return DBError.message, DBError.code
+        db.session.commit()
         return Success.message, Success.code
 
 
@@ -234,7 +235,7 @@ class ComponentList(Resource):
             instore_id = request_data['id']
             print (instore_id)
         for value in ComponentList:
-            print (value)
+            #print (value)
             if 'component_status1' not in value:
                 is_type = Instore().checkInstoreType(instore_id)
                 if is_type == 0:  # 待测样品

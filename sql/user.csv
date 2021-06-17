@@ -1,0 +1,6 @@
+"id";"username";"u_id";"u_password";"u_authority";"u_createtime";"u_department";"u_name";"u_tele";"is_delete";"u_email";"u_status"
+25;"admin";"i333224";"18514427806";"warehouse,program,project,experimenter,laboratory,equipment,information,admin";"";"de1";"这是一个测试";"18514427806";0;"1234";0
+26;"TEST1";"12345";"1234567";"warehouse,program,experimenter,project,laboratory,equipment,information,admin";"2021-05-27 08:38:03";"de1";"DONG KERRY";"+18514427806";0;"123456";1
+27;"TEST2";"TEST123";"00000000";"warehouse,program,project,experimenter,laboratory,equipment,information,admin";"2021-05-27 08:38:36";"de2";"DONG KERRY";"+18514427806";0;"1234";0
+28;"中文测试";"123";"123456";"warehouse,program,project,experimenter,laboratory,equipment,information,admin";"2021-06-15 20:10:30";"de1";"中文测试";"1234";0;"1234";1
+30;"test1234";"12345789";"12345678";"experimenter,project,program,warehouse";"2021-06-16 08:06:12";"de1";"这是测试";"1234";0;"1234";1

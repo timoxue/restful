@@ -45,7 +45,7 @@ class ProcessList(Resource):
                 IncidentModel.incident_id, IncidentModel.create_name,IncidentModel.order_number, IncidentModel.experi_project, IncidentModel.experi_type,
                 ProcessModel.process_id, ProcessModel.process_name, ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
         #incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
-        print(results)
+        #print(results)
         response_data = [dict(zip(result.keys(), result)) for result in results]
         for entity in response_data:
                 entity['start_time_d'] = datetime.datetime.strftime(entity['start_time_d'], '%Y-%m-%d %H:%M:%S')
@@ -61,7 +61,7 @@ class ProcessStatus(Resource):
         print(args)
         process_id = args['process_id']
         result = ProcessModel.query.filter(ProcessModel.process_id==process_id).with_entities(ProcessModel.process_id,ProcessModel.process_status).first()
-        print (result)
+        #print (result)
         response_data = dict(zip(result.keys(), result)) 
         return response_data
         
