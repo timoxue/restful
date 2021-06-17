@@ -26,11 +26,11 @@ class Message(Resource):
 
     def put(self):
         message_id = request.json['message_id']
-        MessageModel.query.filter(MessageModel.message_id == message_id).update({
-            "message_satus":1
-        })
-        #db.session.commit()
         try:
+            MessageModel.query.filter(MessageModel.message_id == message_id).update({
+                "message_satus":1
+            })
+        #db.session.commit()
             db.session.commit()
         except IntegrityError as e:
             print(e)
@@ -79,9 +79,9 @@ class MessageList(Resource):
         #      message.message_notes = '您有一条入库申请通过消息' 
         # elif type == 6:
         #      message.message_notes = '您有一条入库申请驳回消息'                
-        db.session.add(message)
-        #db.session.commit()
         try:
+            db.session.add(message)
+        #db.session.commit()
             db.session.commit()
         except IntegrityError as e:
             print(e)

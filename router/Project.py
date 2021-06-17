@@ -40,10 +40,10 @@ class ProjectList(Resource):
         #print(json.load(request.json))
         project = ProjectModel()
         project = project.from_dict(request.json)
-        
-        db.session.add(project)
-        #db.session.commit()
         try:
+            db.session.add(project)
+        #db.session.commit()
+
             db.session.commit()
         except IntegrityError as e:
             print(e)

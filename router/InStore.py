@@ -60,9 +60,10 @@ class InstoreList(Resource):
         print(username)
         instore = instore.from_dict(request.json)
         instore.create_name = username
-        db.session.add(instore)
-        #db.session.commit()
         try:
+            db.session.add(instore)
+        #db.session.commit()
+        
             db.session.commit()
         except IntegrityError as e:
             print(e)
@@ -78,10 +79,11 @@ class InstoreList(Resource):
 
     def put(self):
         pro_name = request.json['id']
-        instore = InstoreModel.query.filter_by(id=id).first()
-        instore = instore.from_dict(request.json)
-        #db.session.commit()
         try:
+            instore = InstoreModel.query.filter_by(id=id).first()
+            instore = instore.from_dict(request.json)
+        #db.session.commit()
+        
             db.session.commit()
         except IntegrityError as e:
             print(e)
@@ -116,10 +118,11 @@ def confirmStore():
     value['check_time'] = request.json['check_time']
     if value['is_status'] == 1: #申请入库成功
         value['sign_check_form_id'] = request.json['sign_check_form_id']
-    InstoreModel.query.filter_by(order_number=request.json['order_number'], id=request.json['id']).update(value)
+    try:
+        InstoreModel.query.filter_by(order_number=request.json['order_number'], id=request.json['id']).update(value)
     
     #db.session.commit()
-    try:
+
         db.session.commit()
     except IntegrityError as e:
         print(e)

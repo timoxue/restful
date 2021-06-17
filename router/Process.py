@@ -84,17 +84,17 @@ class ProcessStatus(Resource):
                 value['start_time_d'] = datetime.datetime.strptime(req_data['start_time_d'].encode('utf-8'), '%Y-%m-%d %H:%M:%S')
         if "end_time_d" in req_data.keys():
                 value['end_time_d'] = datetime.datetime.strptime(req_data['end_time_d'].encode('utf-8'), '%Y-%m-%d %H:%M:%S')
-        ProcessModel.query.filter(ProcessModel.process_id==process_id).update(value)
+        try:
+            ProcessModel.query.filter(ProcessModel.process_id==process_id).update(value)
 
-        current_process = ProcessModel.query.filter(ProcessModel.process_id==process_id).first()
-        last_procee_id = current_process.pre_process_id
-        incident_id = current_process.incident_id
-        if not last_procee_id: #如果没有前一步
-            #改变incident的status 0=>1
-            IncidentModel.query.filter(IncidentModel.incident_id==incident_id).update({'incident_status': 1})
+            current_process = ProcessModel.query.filter(ProcessModel.process_id==process_id).first()
+            last_procee_id = current_process.pre_process_id
+            incident_id = current_process.incident_id
+            if not last_procee_id: #如果没有前一步
+                #改变incident的status 0=>1
+                IncidentModel.query.filter(IncidentModel.incident_id==incident_id).update({'incident_status': 1})
 
         #db.session.commit()
-        try:
             db.session.commit()
         except IntegrityError as e:
             print(e)
@@ -121,23 +121,23 @@ class CheckProcessStatus(Resource):
         current_process = ProcessModel.query.filter(ProcessModel.process_id==process_id).first()
         next_process_id = current_process.pos_process_id
         incident_id = current_process.incident_id
-        if next_process_id: #如果有下一步
-            ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
-            ProcessModel.query.filter(ProcessModel.process_id==next_process_id).update({'process_status': 1})
-            
-            ComponentModel.query.filter(ComponentModel.process_id==process_id).update({ 'process_id': next_process_id,'experimenter':" "})
-            ComponentModel.query.filter(ComponentModel.process_id==next_process_id).filter(ComponentModel.component_status1 == 3).update({'component_status1':1})
-
-            #new message
-            next_process = ProcessModel.query.filter(ProcessModel.process_id==next_process_id).first()
-            MessageList().newMeassge(4,next_process.experiment_owner,next_process.process_owner)
-
-        else:
-            ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
-            IncidentModel.query.filter(IncidentModel.incident_id==incident_id).update({'incident_status': 2})
-            #ComponentModel.query.filter(ComponentModel.process_id==process_id).filter(ComponentModel.component_status1 == 3).update({'component_status1':3})
-        #db.session.commit()
         try:
+            if next_process_id: #如果有下一步
+                ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
+                ProcessModel.query.filter(ProcessModel.process_id==next_process_id).update({'process_status': 1})
+                
+                ComponentModel.query.filter(ComponentModel.process_id==process_id).update({ 'process_id': next_process_id,'experimenter':" "})
+                ComponentModel.query.filter(ComponentModel.process_id==next_process_id).filter(ComponentModel.component_status1 == 3).update({'component_status1':1})
+
+                #new message
+                next_process = ProcessModel.query.filter(ProcessModel.process_id==next_process_id).first()
+                MessageList().newMeassge(4,next_process.experiment_owner,next_process.process_owner)
+
+            else:
+                ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
+                IncidentModel.query.filter(IncidentModel.incident_id==incident_id).update({'incident_status': 2})
+                #ComponentModel.query.filter(ComponentModel.process_id==process_id).filter(ComponentModel.component_status1 == 3).update({'component_status1':3})
+            #db.session.commit()
             db.session.commit()
         except IntegrityError as e:
             print(e)

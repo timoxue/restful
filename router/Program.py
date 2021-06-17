@@ -88,9 +88,9 @@ class ProgramList(Resource):
         program = ProgramModel()
         program = program.from_dict(request.json)
         program.create_name = username
-        db.session.add(program)
-        #db.session.commit()
         try:
+            db.session.add(program)
+        #db.session.commit()
             db.session.commit()
         except IntegrityError as e:
             print(e)

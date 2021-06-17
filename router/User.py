@@ -33,13 +33,14 @@ class User(Resource):
         password = request.json['password']
         u_status = request.json['u_status']
         print (password)
-        UserModel.query.filter_by(username=user_id).update({
-            "u_password":password,
-            "u_status":u_status
-        })
+        try:
+            UserModel.query.filter_by(username=user_id).update({
+                "u_password":password,
+                "u_status":u_status
+            })
         
         #db.session.commit()
-        try:
+
             db.session.commit()
         except IntegrityError as e:
             print(e)
@@ -65,10 +66,8 @@ class UserList(Resource):
         #print(json.load(request.json))
         user = UserModel()
         user = user.from_dict(request.json)
-        
-        db.session.add(user)
-        #db.session.commit()
         try:
+            db.session.add(user)
             db.session.commit()
         except IntegrityError as e:
             print(e)

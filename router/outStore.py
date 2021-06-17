@@ -25,10 +25,10 @@ class Outstore(Resource):
         return NotFound.message, NotFound.code
 
     def delete(self, id):
-        Outstore = OutstoreModel.query.filter_by(id=id).first()
-        db.session.delete(Outstore)
-        #db.session.commit()
         try:
+            Outstore = OutstoreModel.query.filter_by(id=id).first()
+            db.session.delete(Outstore)
+        #db.session.commit()
             db.session.commit()
         except IntegrityError as e:
             print(e)
@@ -59,9 +59,9 @@ class OutstoreList(Resource):
         print(username)
         Outstore = Outstore.from_dict(request.json)
         Outstore.create_name = username
-        db.session.add(Outstore)
-        #db.session.commit()
         try:
+            db.session.add(Outstore)
+        #db.session.commit()
             db.session.commit()
         except IntegrityError as e:
             print(e)
@@ -77,10 +77,10 @@ class OutstoreList(Resource):
 
     def put(self):
         pro_name = request.json['id']
-        Outstore = OutstoreModel.query.filter_by(id=id).first()
-        Outstore = Outstore.from_dict(request.json)
+        try:    
+            Outstore = OutstoreModel.query.filter_by(id=id).first()
+            Outstore = Outstore.from_dict(request.json)
         #db.session.commit()
-        try:
             db.session.commit()
         except IntegrityError as e:
             print(e)

@@ -50,9 +50,9 @@ class File(Resource):
             }
             print (file_json)
             file_to_save = FileModel().from_dict(file_json)
-            db.session.add(file_to_save)
-            #db.session.commit()
             try:
+                db.session.add(file_to_save)
+            #db.session.commit()
                 db.session.commit()
             except IntegrityError as e:
                 print(e)

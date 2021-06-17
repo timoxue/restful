@@ -10,9 +10,9 @@ class Experiment(Resource):
     def post(self):
         experi = ExperimentModel()
         experi = experi.from_dict(request.json)
-        db.session.add(experi)
-        #db.session.commit()
         try:
+            db.session.add(experi)
+        #db.session.commit()
             db.session.commit()
         except IntegrityError as e:
             print(e)
