@@ -1,3 +1,4 @@
+from models.alertData import AlterData
 from flask import Flask, request
 from flask_restful import Resource, Api
 from router.HelloWord import HelloWorld
@@ -13,6 +14,8 @@ from router.Process import ProcessStatus
 from router.Process import ProcessList
 from router.Message import Message,MessageList
 from router.Component import ComponentList
+from router.PieData import PieDataList
+from router.AlterData import AlterDataList
 from router.Component import CheckComponent, ReportFailureComponent
 from router.Process import CheckProcessStatus
 from router.Rule import RuletList
@@ -48,6 +51,8 @@ api.add_resource(Program, '/program/<string:task_id>')
 api.add_resource(InstoreList, '/instores')
 
 api.add_resource(OutstoreList, '/outstores')
+api.add_resource(Outstore, '/outstore/<id>')
+
 
 api.add_resource(Instore, '/instore/<id>')
 api.add_resource(Component, '/components')
@@ -66,6 +71,10 @@ api.add_resource(Message,'/message')
 
 api.add_resource(ComponentList,'/getAssignList')
 api.add_resource(CheckComponent, '/checkComponent')
+api.add_resource(PieDataList,'/pieDataList')
+
+api.add_resource(AlterDataList,'/alterDataList')
+
 api.add_resource(ReportFailureComponent, '/reportFailure/<component_unique_id>')
 
 api.add_resource(File, '/files')

@@ -126,9 +126,10 @@ class Incident(Resource):
             value['create_at'] = datetime.datetime.strptime(component_list[i]['create_at'].encode('utf-8'), '%Y-%m-%d %H:%M:%S')
             value['order_number'] = component_list[i]['order_number']
             value['original_id'] = component_list[i]['original_id']
-            value['component_status'] = component_list[i]['component_status']
+            #value['component_status'] = component_list[i]['component_status']
             #更改试验件的状态 变更为已分配
             value['component_status1'] = 1
+            value['outstore_id'] = component_list[i]['outstore_id']
             value['component_unique_id'] = component_list[i]['component_unique_id']
             #del component_list[i]['create_at']
             #del component_list[i]['update_at']
@@ -160,8 +161,10 @@ class IncidentList(Resource):
         # parser = reqparse.RequestParser()
         # parser.add_argument('incident_status', type=int)
         # args = parser.parse_args()
+        print(username)
         results = IncidentModel.query.filter(IncidentModel.create_name == username). \
-        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2,ProcessModel.process_status == 3,and_(ProcessModel.process_status == 4, ProcessModel.pos_process_id == None))).\
+        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).\
+        filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2,ProcessModel.process_status == 3,and_(ProcessModel.process_status == 4, ProcessModel.pos_process_id == None))).\
         join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number).\
         join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
         with_entities(ProgramModel.pro_name, ProgramModel.pro_id,

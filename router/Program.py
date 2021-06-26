@@ -75,7 +75,7 @@ class ProgramList(Resource):
         ).fetchall()
 
         results = [dict(zip(result.keys(), result)) for result in data]
-        print(results)
+        #print(results)
         str = json.dumps(results, cls=DateEncoder)
         result = json.loads(str)
         return {'data': result}

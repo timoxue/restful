@@ -14,7 +14,7 @@ class Instore(db.Model, Serializrable):
     #入库时间
     in_date = db.Column(db.String(8),nullable = False)
     #大纲编号
-    program_code = db.Column(db.String(80),nullable = False)
+    program_code = db.Column(db.String(80))
     #委托单号
     order_number = db.Column(db.String(80),nullable = False)
     #0申请,1成功,2失败

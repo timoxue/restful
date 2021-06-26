@@ -1,12 +1,13 @@
 # encoding:UTF-8 
 
-from threading import Condition
 from flask_restful import Resource, Api, reqparse
 from flask import Flask, jsonify, abort, request
 from models import program
+from models import Component_his
 from models.Process import Process as ProcessModel
 from models.Incident import Incident as IncidentModel
 from models.Component import Component as ComponentModel
+from models.Component_his import ComponentHis as ComponentHisModel
 from models.program import Program as ProgramModel
 from models.project import Project as ProjectModel
 from models.db import db
@@ -18,7 +19,6 @@ import datetime
 import decimal
 from router.Status import Success, NotFound,NotUnique,DBError
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-import datetime
 from sqlalchemy.sql import func
 
 class ProcessList(Resource):
@@ -121,12 +121,21 @@ class CheckProcessStatus(Resource):
         current_process = ProcessModel.query.filter(ProcessModel.process_id==process_id).first()
         next_process_id = current_process.pos_process_id
         incident_id = current_process.incident_id
+        #merger history component data
+        
+        components_his = [dict(zip(component.keys(), component)) for component in db.session.query(ComponentModel.original_id,ComponentModel.component_unique_id,ComponentModel.order_number,ComponentModel.instore_id,ComponentModel.outstore_id,ComponentModel.incident_id,ComponentModel.process_id,ComponentModel.process_owner,ComponentModel.component_status,ComponentModel.component_status1,ComponentModel.experiment_owner,ComponentModel.experiment_sheet_id,ComponentModel.experimenter).filter(ComponentModel.process_id==process_id).all()]
+        db.session.execute(
+            ComponentHisModel.__table__.insert(),
+                components_his
+        )
+        db.session.commit()
+
         try:
             if next_process_id: #如果有下一步
                 ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
                 ProcessModel.query.filter(ProcessModel.process_id==next_process_id).update({'process_status': 1})
                 
-                ComponentModel.query.filter(ComponentModel.process_id==process_id).update({ 'process_id': next_process_id,'experimenter':" "})
+                ComponentModel.query.filter(ComponentModel.process_id==process_id).update({ 'process_id': next_process_id,'experimenter':" ","experiment_sheet_id":None})
                 ComponentModel.query.filter(ComponentModel.process_id==next_process_id).filter(ComponentModel.component_status1 == 3).update({'component_status1':1})
 
                 #new message
@@ -179,8 +188,8 @@ def overviewStatus():
     return data
 def get_count(q):
     return q.with_entities(func.count()).scalar()
-@app.route('/getDashBoardProcess/<order_number>')
 
+@app.route('/getDashBoardProcess/<order_number>')
 def dashBoardProcess(order_number):
     conditions = []
     if order_number == 'All':
@@ -188,15 +197,15 @@ def dashBoardProcess(order_number):
         conditions = []
     else:
         conditions.append(ComponentModel.order_number == order_number)
-    inStore = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(ComponentModel.component_status == 1)) #已入库
-    inMeasure = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(ProcessModel.process_name.like("%" +"测量"+ "%")))
+    inStore = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 1)) #已入库
+    inMeasure = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ProcessModel.process_name.like("%" +"测量"+ "%")))
     print(inMeasure)
     #results = [dict(zip(result.keys(), result)) for result in inMeasure]
     #print(results)
-    inPaste = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(ProcessModel.process_name.like("%" +"应变计粘贴"+ "%")))
-    inLossless = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(ProcessModel.process_name.like("%" +"无损"+ "%")))
-    inConditions = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(ProcessModel.process_name.like("%" +"环境调节"+ "%")))
-    inExp = ComponentModel.query.filter(ComponentModel.component_status == 2).count()
+    inPaste = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ProcessModel.process_name.like("%" +"应变计粘贴"+ "%")))
+    inLossless = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ProcessModel.process_name.like("%" +"无损"+ "%")))
+    inConditions = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ProcessModel.process_name.like("%" +"环境调节"+ "%")))
+    inExp = ComponentModel.query.filter(ComponentModel.component_status == 2).filter(*conditions).count()
     allIncident = ProcessModel.query.count() #分配给自己的工序
     finishIncident = ProcessModel.query.filter(ProcessModel.process_status == 4).count() #已完成
     assginIncident = ProcessModel.query.filter(ProcessModel.process_status == 2).count() #已分配且待领取
@@ -209,6 +218,8 @@ def dashBoardProcess(order_number):
          "inLossless":inLossless,
          "inConditions":inConditions,
          "inExp":inExp
+       
+
     }
     return data
 

@@ -67,6 +67,7 @@ class InstoreList(Resource):
             db.session.commit()
         except IntegrityError as e:
             print(e)
+            #message = e.args[1]
             return NotUnique.message, NotUnique.code
         except SQLAlchemyError as e: 
             print(e)

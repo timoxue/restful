@@ -5,7 +5,7 @@ class Success:
 
 class NotUnique:
     code = 500
-    message = {'message': '数据有重复提交'}
+    message = {'message': '数据提交有问题，请检查'}
 
 class NotFound:
     code = 404
@@ -18,3 +18,7 @@ class NotAllow:
 class DBError:
     code = 500
     message = {'message': '数据库报错'}
+
+class PSError:
+    code = 500
+    message = {'message': '用户名密码错误'}

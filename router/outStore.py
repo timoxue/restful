@@ -46,7 +46,7 @@ class OutstoreList(Resource):
     @jwt_required()
     def get(self):
         username = current_identity.to_dict()['username']
-        results = OutstoreModel.query.filter(OutstoreModel.create_name == username).join(ProgramModel,OutstoreModel.order_number == ProgramModel.order_number).\
+        results = OutstoreModel.query.join(ProgramModel,OutstoreModel.order_number == ProgramModel.order_number).\
         with_entities(OutstoreModel.id,OutstoreModel.is_num,OutstoreModel.is_type,OutstoreModel.order_number,ProgramModel.pro_name,OutstoreModel.out_date,OutstoreModel.out_name).order_by(OutstoreModel.out_date.desc()).all()
         response_data = [dict(zip(result.keys(), result)) for result in results]
         return {'data': response_data}
@@ -73,7 +73,7 @@ class OutstoreList(Resource):
         # data = db.session.query(ProgramModel.create_name).join(OutstoreModel,OutstoreModel.order_number == ProgramModel.order_number).first()
         # data = dict(zip(data.keys(), data))
         # MessageList().newMeassge(0,Outstore.create_name,data['create_name'])
-        return Success.message, Success.code
+        return Outstore.id, Success.code
 
     def put(self):
         pro_name = request.json['id']

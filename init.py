@@ -16,9 +16,9 @@ from models.outStore import outStore
 from models.Test import People as PeopleModel
 from models.Test import Address as AddressModel
 from models import Combined
-
-
-
+from models.pieData import PieData
+from models.alertData import AlterData
+from models.Component_his import ComponentHis
 import sys,os
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 from werkzeug.security import safe_str_cmp
 from models.user import User as UserModel
 from models.db import db
+from router.Status import PSError
 
 
 def authenticate(username, password):
@@ -16,7 +17,11 @@ def authenticate(username, password):
     if user and safe_str_cmp(user.u_password, password):
 
         print (user)
-        return user 
+        return user
+    # else:
+    #     print ('error')
+    #     return PSError.message, PSError.code
+
 
 #Identity function takes in the payload (payload is the contents of the jwt token)
 def identity(payload):

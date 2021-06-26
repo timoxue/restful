@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import re
 from flask.wrappers import Response
+from sqlalchemy.sql.schema import Constraint
 from models import instore
 from models import program
 from models.instore import Instore
@@ -7,6 +9,7 @@ from flask_restful import Resource, Api, reqparse
 from flask import Flask, jsonify, abort, request
 from models.Incident import Incident as IncidentModel
 from models.Component import Component as ComponentModel
+from models.Component_his import ComponentHis as ComponentHisModel
 from models.program import Program as ProgramModel
 from models.project import Project as ProjectModel
 from models.Process import Process as ProcessModel
@@ -76,7 +79,7 @@ def scanCode():
 @app.route("/comOverview",methods=['GET'])
 def comOverview():
     componentCount = db.session.query(ComponentModel).count()
-    componentInstore = db.session.query(ComponentModel).filter(ComponentModel.component_status == 1).filter(ComponentModel.component_status1 == None).count() #样品入库
+    componentInstore = db.session.query(ComponentModel).filter(ComponentModel.component_status != None).filter(ComponentModel.component_status1 == None).count() #样品入库
     componentProcess = db.session.query(ComponentModel).filter(or_(ComponentModel.component_status1 != 5,ComponentModel.component_status1 != 6)).filter(ComponentModel.component_status == 2).count() #实验中
     componentDelivered = db.session.query(ComponentModel).filter(ComponentModel.component_status1 == 6).filter(ComponentModel.component_status == 1).count() #待交付
    
@@ -106,9 +109,19 @@ def checkComponent():
     if 'id' in request_data:
         instore_id = request_data['id']
         conditions.append(ComponentModel.instore_id == instore_id)
+    if 'out_id' in request_data:
+        outstore_id = request_data['out_id']
+        conditions.append(ComponentModel.outstore_id == outstore_id)
     if 'order_number' in request_data:
         order_number = request_data['order_number']
         conditions.append(ComponentModel.order_number == order_number)
+    if 'conidtion' in request_data:
+        in_condition = request_data['conidtion'] #标记出库还是入库  0：出库 1：入库
+        if in_condition == 0:
+            conditions.append(ComponentModel.component_status != 2 )
+        else:
+            conditions.append(ComponentModel.component_status == 2 )
+
     u = db.session.query(ComponentModel).filter(ComponentModel.component_unique_id == component_unique_id).first()
     if u is None:
         resp = jsonify({'message':'试验件编码不存在，请重新扫码'})
@@ -120,12 +133,13 @@ def checkComponent():
         u = db.session.query(ComponentModel).filter(*conditions).filter(ComponentModel.component_unique_id == component_unique_id).first()
         
         if u is None:
-            resp = jsonify({'message':"试验件编码在当前委托单编号号下不存在！"})
+            resp = jsonify({'message':"试验件编码在当前委托单编号号不存在或已完成出入库！"})
             abort(resp)
-        
+         
+
         if is_type == 0:  # 待测样品
             status = None
-            status1 = None
+            status1 = 1
 
         elif is_type == 1:  # 1已完成样品
             status = 3 
@@ -163,6 +177,13 @@ def addExComponent(order_number):
 def loadCodeComponent(instore_id):
     u = db.session.query(ComponentModel).filter(
         ComponentModel.instore_id == instore_id).filter(ComponentModel.component_status == 0).all()
+    result = [data.to_dict() for data in u]
+    return {'data': result}
+
+
+@app.route('/incidentComponents/<incident_id>')
+def incidentComponents(incident_id):
+    u = db.session.query(ComponentModel).filter(ComponentModel.incident_id == incident_id).filter(ComponentModel.component_status == 1).all()
     result = [data.to_dict() for data in u]
     return {'data': result}
 
@@ -231,6 +252,7 @@ class ComponentList(Resource):
     def put(self):
         request_data = request.json
         ComponentList = request_data['data']
+
         if 'id' in request_data:
             instore_id = request_data['id']
             print (instore_id)
@@ -311,7 +333,7 @@ def componentTime():
 @app.route('/componentDetail/<component_unique_id>')
 def componentDetail(component_unique_id):
     component = ComponentModel.query.filter(ComponentModel.component_unique_id == component_unique_id).join(ProcessModel,ProcessModel.process_id == ComponentModel.process_id).join(IncidentModel,IncidentModel.order_number == ComponentModel.order_number)\
-         .join(ProgramModel, ProgramModel.order_number == IncidentModel.order_number) \
+        .join(ProgramModel, ProgramModel.order_number == IncidentModel.order_number) \
         .join(ProjectModel, ProjectModel.id == ProgramModel.pro_id) \
         .with_entities(ComponentModel.component_unique_id,ProgramModel.pro_name,ProgramModel.task_name_book,
         ProjectModel.create_name,
@@ -319,7 +341,7 @@ def componentDetail(component_unique_id):
         ComponentModel.create_at,ComponentModel.experiment_owner,ComponentModel.incident_id,
         ComponentModel.experimenter,ComponentModel.process_owner,ComponentModel.order_number,ComponentModel.instore_id,ProcessModel.start_time_d,ProcessModel.end_time_d,IncidentModel.create_name,IncidentModel.experi_project,IncidentModel.experi_rely,IncidentModel.experi_type)\
         .first()
-    
+    print(component)
     process_id = component.process_id
     dis_process = ProcessModel.query.filter(ProcessModel.process_id == process_id) \
             .join(IncidentModel, IncidentModel.incident_id == ProcessModel.incident_id) \
@@ -344,22 +366,27 @@ def componentDetail(component_unique_id):
         # 2 Get group process under the same incident
     group_incident_id = response_data['incident_id']
     group_processes = ProcessModel.query.filter(
-            ProcessModel.incident_id == group_incident_id).order_by(ProcessModel.step_number).all()
+            ProcessModel.incident_id == group_incident_id).join(ComponentHisModel,ComponentHisModel.process_id == ProcessModel.process_id).filter(ComponentHisModel.component_unique_id == component_unique_id).order_by(ProcessModel.step_number).\
+            with_entities(ProcessModel.process_name,ProcessModel.process_id,ProcessModel.start_time_d,ProcessModel.end_time_d,ProcessModel.process_owner,ComponentHisModel.experimenter,ComponentHisModel.experiment_sheet_id,ComponentHisModel.create_at).all()
     co_workers = set()
     group_processes_names = []
-
+    group_processes = [dict(zip(result.keys(), result))
+                         for result in group_processes]
 
     component = dict(zip(component.keys(), component))
     for g_p in group_processes:
-        co_workers.add(g_p.process_owner)
+        co_workers.add(g_p['process_owner'])
         processObj = {}
-        processObj['process_name'] = g_p.process_name
-        processObj['process_id'] = g_p.process_id
-        processObj['process_owner'] = g_p.process_owner
+        processObj['process_name'] = g_p['process_name']
+        processObj['process_id'] = g_p['process_id']
+        processObj['process_owner'] = g_p['process_owner']
+        processObj['experimenter'] = g_p['experimenter']
+        processObj['experiment_sheet_id'] = g_p['experiment_sheet_id']
+        processObj['create_at'] = g_p['create_at']
         group_processes_names.append(processObj)
     #component = component.to_dict()
-    component['planIncidentStartTime'] = group_processes[0].start_time_d
-    component['planIncidentEndTime'] = group_processes[len(group_processes)-1].end_time_d
+    component['planIncidentStartTime'] = group_processes[0]['start_time_d']
+    component['planIncidentEndTime'] = group_processes[len(group_processes)-1]['end_time_d']
     component['co_experimenter'] = list(co_workers)
     component['processes'] = group_processes_names
     #response_data['component_unique_id'] = component.component_unique_id

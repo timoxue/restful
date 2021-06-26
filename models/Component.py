@@ -11,7 +11,7 @@ class Component(db.Model, Serializrable):
     original_id = db.Column(db.String(80))
     #component_id = db.Column(db.Integer, db.Sequence('id_seq'))
     #试验件名称
-    component_name = db.Column(db.String(20), unique=True)
+    component_name = db.Column(db.String(20))
     #试验件编码
     component_unique_id = db.Column(db.String(80), unique=True, nullable=False)
     #委托单单号
