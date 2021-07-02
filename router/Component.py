@@ -332,7 +332,7 @@ def componentTime():
 
 @app.route('/componentDetail/<component_unique_id>')
 def componentDetail(component_unique_id):
-    component = ComponentModel.query.filter(ComponentModel.component_unique_id == component_unique_id).join(ProcessModel,ProcessModel.process_id == ComponentModel.process_id).join(IncidentModel,IncidentModel.order_number == ComponentModel.order_number)\
+    component = ComponentModel.query.filter(ComponentModel.component_unique_id == component_unique_id).join(ProcessModel,ProcessModel.process_id == ComponentModel.process_id).join(IncidentModel,IncidentModel.incident_id == ComponentModel.incident_id)\
         .join(ProgramModel, ProgramModel.order_number == IncidentModel.order_number) \
         .join(ProjectModel, ProjectModel.id == ProgramModel.pro_id) \
         .with_entities(ComponentModel.component_unique_id,ProgramModel.pro_name,ProgramModel.task_name_book,

@@ -198,13 +198,13 @@ def dashBoardProcess(order_number):
     else:
         conditions.append(ComponentModel.order_number == order_number)
     inStore = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 1)) #已入库
-    inMeasure = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ProcessModel.process_name.like("%" +"测量"+ "%")))
+    inMeasure = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 2).filter(ProcessModel.process_name.like("%" +"测量"+ "%")))
     print(inMeasure)
     #results = [dict(zip(result.keys(), result)) for result in inMeasure]
     #print(results)
-    inPaste = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ProcessModel.process_name.like("%" +"应变计粘贴"+ "%")))
-    inLossless = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ProcessModel.process_name.like("%" +"无损"+ "%")))
-    inConditions = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ProcessModel.process_name.like("%" +"环境调节"+ "%")))
+    inPaste = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 2).filter(ProcessModel.process_name.like("%" +"应变计粘贴"+ "%")))
+    inLossless = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 2).filter(ProcessModel.process_name.like("%" +"无损"+ "%")))
+    inConditions = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 2).filter(ProcessModel.process_name.like("%" +"环境调节"+ "%")))
     inExp = ComponentModel.query.filter(ComponentModel.component_status == 2).filter(*conditions).count()
     allIncident = ProcessModel.query.count() #分配给自己的工序
     finishIncident = ProcessModel.query.filter(ProcessModel.process_status == 4).count() #已完成
