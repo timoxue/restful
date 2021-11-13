@@ -51,7 +51,7 @@ class MessageList(Resource):
     @jwt_required()
     def get(self):
         username = current_identity.to_dict()['username']
-        print(username)
+     
         messages =  MessageModel.query.filter(
             MessageModel.recipient_name == username).filter(MessageModel.message_satus == 0).join(MessagetxtModel,MessagetxtModel.message_type == MessageModel.message_type).with_entities(MessageModel.message_id,MessageModel.recipient_name,MessagetxtModel.message_notes,MessageModel.message_satus,MessageModel.create_name,MessageModel.create_at).all()
         response_data = [dict(zip(result.keys(), result)) for result in messages]

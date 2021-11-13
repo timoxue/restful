@@ -1,3 +1,4 @@
+from operator import delitem
 from flask_restful import Resource
 from flask import Flask, jsonify, abort, request
 
@@ -10,9 +11,28 @@ from router.Status import Success, NotFound,NotUnique,DBError
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
 
+class AlterData(Resource):
+    def delete(self, id):
+        alter = AlterDataModel.query.filter_by(id=id).first()
+        db.session.delete(alter)
+        #db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
+        return Success.message, Success.code
+        
+
+
+
+
 class AlterDataList(Resource):
     def get(self):
-        results = AlterDataModel.query.with_entities(AlterDataModel.create_at,AlterDataModel.des).all()
+        results = AlterDataModel.query.with_entities(AlterDataModel.id,AlterDataModel.create_at,AlterDataModel.des).all()
 
         response_data =  [dict(zip(result.keys(), result)) for result in results]
 

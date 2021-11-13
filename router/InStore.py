@@ -135,7 +135,7 @@ def confirmStore():
     #new a 入库申请通过/驳回
     data = db.session.query(InstoreModel.create_name).filter_by(order_number=request.json['order_number'], id=request.json['id']).first()
     data = dict(zip(data.keys(), data))
-    print (data)
+    
     if  value['is_status'] == 1:
 
         MessageList().newMeassge(5,username,data['create_name'])

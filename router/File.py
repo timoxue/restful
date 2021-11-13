@@ -80,8 +80,7 @@ def get_file(file_id):
     extension = file_name.rsplit('.', 1)[-1].lower()
     f_name = str(file_id)+"."+extension
     #tem_path = os.path.join(location, str(file_id)+"." + extension)
-    print (location)
-    print (f_name)
+
     try:
         return send_from_directory(location, filename=f_name, as_attachment=True)
     except IOError:

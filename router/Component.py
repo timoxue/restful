@@ -17,6 +17,7 @@ from router.InStore import Instore as Instore
 from models.db import app
 from sqlalchemy import or_  
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from flask_jwt import JWT, jwt_required, current_identity
 
 from models.db import db
 from router.Status import Success, NotFound,NotAllow, NotUnique,DBError
@@ -58,16 +59,15 @@ def scanCode():
 
     elif is_type == 2:  # 问题样品
         status = 5
-    print(status)
+ 
     for value in ComponentList:
         component = ComponentModel.query.filter(
             ComponentModel.component_unique_id == value['component_unique_id']).first()
-        print (component)
         if component is None:
             return NotFound.message,NotFound.code
 
         elif component.component_status1 != status:  # 错误的入库类型
-            print (component.component_status1)
+            
         
             uncomponentList.append(component.to_dict())
 
@@ -148,7 +148,7 @@ def checkComponent():
         elif is_type == 2:  # 问题样品
             status = 5
             status1 = 5 #成品或者完成样品
-        print(status)
+      
 
 
         if u.component_status1 != status and u.component_status1 != status1:
@@ -189,12 +189,22 @@ def incidentComponents(incident_id):
 
 
 class ComponentList(Resource):
+    @jwt_required()
     def get(self):
+        username = current_identity.to_dict()['username']
         parser = reqparse.RequestParser()
         parser.add_argument('process_id', type=int)
         parser.add_argument('process_status', type=int)
+        parser.add_argument('role_type')
         args = parser.parse_args()
+        print(args)
         response_data = {}
+        conditions = []
+        role_type = args['role_type']
+        if role_type == 'process_owner':
+            conditions.append(ComponentModel.process_owner == username)
+        if role_type == "experimenter":
+            conditions.append(ComponentModel.experimenter == username)        
         print(args['process_status'])
         # 1. Get current process
         dis_process = ProcessModel.query.filter(ProcessModel.process_id == args['process_id']) \
@@ -207,7 +217,7 @@ class ComponentList(Resource):
                            ProcessModel.process_id, ProcessModel.process_name,
                            ProcessModel.start_time_d, ProcessModel.end_time_d,
                            ProcessModel.process_name, ProcessModel.process_status, ProcessModel.experimenter, ProcessModel.process_owner, ProcessModel.experiment_sheet_id).all()
-        print(dis_process)
+       
         response_data = [dict(zip(result.keys(), result))
                          for result in dis_process]
 
@@ -234,7 +244,7 @@ class ComponentList(Resource):
         response_data["processes"] = group_processes_names
 
         # 3 get group Components
-        group_components = ComponentModel.query.filter(ComponentModel.incident_id == group_incident_id) \
+        group_components = ComponentModel.query.filter(*conditions).filter(ComponentModel.incident_id == group_incident_id) \
             .all()
         components_data = [result.to_dict() for result in group_components]
 
@@ -255,7 +265,7 @@ class ComponentList(Resource):
 
         if 'id' in request_data:
             instore_id = request_data['id']
-            print (instore_id)
+           
         for value in ComponentList:
             #print (value)
             if 'component_status1' not in value:
@@ -320,11 +330,11 @@ class ReportFailureComponent(Resource):
 def componentTime():
 
     data = db.session.execute(
-            'SELECT *  FROM sfincident.component_series limit 7'
+            'SELECT *  FROM sfincident.component_series where finish != 0 limit 7'
         ).fetchall()
 
     results = [dict(zip(result.keys(), result)) for result in data]
-    print(results)
+    
     return {
         'data':results
     }
@@ -353,10 +363,10 @@ def componentDetail(component_unique_id):
                            ProcessModel.process_id, ProcessModel.process_name,
                            ProcessModel.start_time_d, ProcessModel.end_time_d,
                            ProcessModel.process_name, ProcessModel.process_status, ProcessModel.experimenter, ProcessModel.process_owner, ProcessModel.experiment_sheet_id).all()
-    #print(dis_process)
+    print(dis_process)
     response_data = [dict(zip(result.keys(), result))
                          for result in dis_process]
-    print (response_data)
+    
     for entity in response_data:
         entity['start_time_d'] = datetime.datetime.strftime(
             entity['start_time_d'], '%Y-%m-%d %H:%M:%S')
@@ -370,9 +380,10 @@ def componentDetail(component_unique_id):
             with_entities(ProcessModel.process_name,ProcessModel.process_id,ProcessModel.start_time_d,ProcessModel.end_time_d,ProcessModel.process_owner,ComponentHisModel.experimenter,ComponentHisModel.experiment_sheet_id,ComponentHisModel.create_at).all()
     co_workers = set()
     group_processes_names = []
+    print (group_processes)
     group_processes = [dict(zip(result.keys(), result))
                          for result in group_processes]
-
+    
     component = dict(zip(component.keys(), component))
     for g_p in group_processes:
         co_workers.add(g_p['process_owner'])
@@ -411,7 +422,7 @@ def componentEfficiency():
         ).fetchall()
 
     results = [dict(zip(result.keys(), result)) for result in data]
-    print(results)
+  
     return {
         'data':results
     }

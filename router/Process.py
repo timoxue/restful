@@ -58,7 +58,7 @@ class ProcessStatus(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('process_id', type=int)
         args = parser.parse_args()
-        print(args)
+      
         process_id = args['process_id']
         result = ProcessModel.query.filter(ProcessModel.process_id==process_id).with_entities(ProcessModel.process_id,ProcessModel.process_status).first()
         #print (result)
@@ -183,7 +183,6 @@ def overviewStatus():
         "assginIncident":assginIncident,
         "processIncident":processIncident,
         "unassginIncident":unassginIncident
-
     }
     return data
 def get_count(q):
@@ -212,14 +211,12 @@ def dashBoardProcess(order_number):
     processIncident = ProcessModel.query.filter(ProcessModel.process_status == 3).count() #实验中
     unassginIncident =  ProcessModel.query.filter(ProcessModel.process_status == 1).count()#待分配
     data = {
-        "inStore":inStore,
         "inMeasure":inMeasure,
-         "inPaste":inPaste,
-         "inLossless":inLossless,
-         "inConditions":inConditions,
-         "inExp":inExp
-       
-
+        "inConditions":inConditions,
+        "inStore":inStore,
+        "inPaste":inPaste,
+        "inLossless":inLossless,
+        "inExp":inExp
     }
     return data
 

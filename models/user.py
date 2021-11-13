@@ -14,9 +14,9 @@ class User(db.Model, Serializrable):
     u_createtime = db.Column(db.DateTime, default=datetime.datetime.now)
     u_department = db.Column(db.String(32),nullable = False)
     u_name = db.Column(db.String(256),nullable = False)  
-    u_tele = db.Column(db.String(256),nullable = False)  
+    u_tele = db.Column(db.String(256))  
     is_delete = db.Column(db.Boolean(),default=False)
-    u_email = db.Column(db.String(120),  nullable=False)
+    u_email = db.Column(db.String(120))
     u_status = db.Column(db.Integer,default=0) #初始状态为0
 
     def __repr__(self):

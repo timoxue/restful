@@ -136,7 +136,7 @@ def programProcess():
             'SELECT * FROM sfincident.PROGRAM_PROCESS ORDER BY percent DESC limit 10').fetchall()
 
     results = [dict(zip(result.keys(), result)) for result in data]
-    print(results)
+    
     str = json.dumps(results, cls=DateEncoder)
     result = json.loads(str)
     return {'data': result}
@@ -145,7 +145,7 @@ def programProcess():
 def programAlert():
     data = db.session.execute('SELECT * FROM sfincident.PROGRAM_ALERT').fetchall()
     results = [dict(zip(result.keys(), result)) for result in data]
-    print(results)
+  
     str = json.dumps(results, cls=DateEncoder)
     result = json.loads(str)
     return {'data': result}

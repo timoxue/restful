@@ -56,7 +56,7 @@ class OutstoreList(Resource):
         username = current_identity.to_dict()['username']
         # print(json.load(request.json))
         Outstore = OutstoreModel()
-        print(username)
+   
         Outstore = Outstore.from_dict(request.json)
         Outstore.create_name = username
         try:

@@ -19,6 +19,7 @@ from models import Combined
 from models.pieData import PieData
 from models.alertData import AlterData
 from models.Component_his import ComponentHis
+from models.equipment import Equipment
 import sys,os
 
 if __name__ == '__main__':
