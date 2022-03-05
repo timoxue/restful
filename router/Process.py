@@ -20,21 +20,53 @@ import decimal
 from router.Status import Success, NotFound,NotUnique,DBError
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.sql import func
+from router.User import UserAuth
+class Process(Resource):
+    #@jwt_required()
+    def get(self, process_id):
+        process = ProcessModel.query.filter_by(process_id=process_id).first()
+        if process:
+            return process.to_dict()
+        return NotFound.message, NotFound.code
+
+
+
+    def put (self,process_id):
+        data = request.json['data']
+        
+        try:
+            ProcessModel.query.filter_by(process_id=process_id).update(data)
+        
+        #db.session.commit()
+
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
+        return Success.message, Success.code    
+
 
 class ProcessList(Resource):
     @jwt_required()
     def get(self):
         username = current_identity.to_dict()['username']
         conditions = []
+        u_auth = UserAuth().getUserAuth(username)
+        print (u_auth)
+        
+
         parser = reqparse.RequestParser()
         parser.add_argument('role_type')
         args = parser.parse_args()
         role_type = args['role_type']
-
-        if role_type == 'process_owner':
-            conditions.append(ProcessModel.process_owner == username)
-        if role_type == "experimenter":
-            conditions.append(ProcessModel.experimenter == username)
+        if(u_auth != 'adminAll'):
+            if role_type == 'process_owner':
+                conditions.append(ProcessModel.process_owner == username)
+            if role_type == "experimenter":
+                conditions.append(ProcessModel.experimenter == username)
 
         
         results = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status != 0).join(IncidentModel, IncidentModel.incident_id==ProcessModel.incident_id). \
@@ -46,6 +78,17 @@ class ProcessList(Resource):
                 ProcessModel.process_id, ProcessModel.process_name, ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
         #incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
         #print(results)
+        
+        if role_type == "experimenter":
+            if u_auth != 'adminAll':
+                sql =  'SELECT * FROM SUB_PROCESS_VIEW WHERE experimenter = (:USER) '
+                
+            else:
+                sql =  'SELECT * FROM SUB_PROCESS_VIEW'
+            results = db.session.execute( sql , {
+                    "USER": username}
+            ).fetchall()        
+
         response_data = [dict(zip(result.keys(), result)) for result in results]
         for entity in response_data:
                 entity['start_time_d'] = datetime.datetime.strftime(entity['start_time_d'], '%Y-%m-%d %H:%M:%S')
@@ -85,6 +128,7 @@ class ProcessStatus(Resource):
         if "end_time_d" in req_data.keys():
                 value['end_time_d'] = datetime.datetime.strptime(req_data['end_time_d'].encode('utf-8'), '%Y-%m-%d %H:%M:%S')
         try:
+            print(value)
             ProcessModel.query.filter(ProcessModel.process_id==process_id).update(value)
 
             current_process = ProcessModel.query.filter(ProcessModel.process_id==process_id).first()
@@ -132,10 +176,11 @@ class CheckProcessStatus(Resource):
 
         try:
             if next_process_id: #如果有下一步
+                next_process = ProcessModel.query.filter(ProcessModel.process_id==next_process_id).first()
                 ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
                 ProcessModel.query.filter(ProcessModel.process_id==next_process_id).update({'process_status': 1})
                 
-                ComponentModel.query.filter(ComponentModel.process_id==process_id).update({ 'process_id': next_process_id,'experimenter':" ","experiment_sheet_id":None})
+                ComponentModel.query.filter(ComponentModel.process_id==process_id).update({ 'process_id': next_process_id,'experimenter':" ","experiment_sheet_id":None,"process_owner":next_process.process_owner})
                 ComponentModel.query.filter(ComponentModel.process_id==next_process_id).filter(ComponentModel.component_status1 == 3).update({'component_status1':1})
 
                 #new message
@@ -143,8 +188,9 @@ class CheckProcessStatus(Resource):
                 MessageList().newMeassge(4,next_process.experiment_owner,next_process.process_owner)
 
             else:
-                ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4}) 
-                IncidentModel.query.filter(IncidentModel.incident_id==incident_id).update({'incident_status': 2})
+                ProcessModel.query.filter(ProcessModel.process_id==process_id).update({'process_status': 4})
+                #当前工单回到待审核状态，需要试验主管审核
+                IncidentModel.query.filter(IncidentModel.incident_id==incident_id).update({'incident_status': 3})
                 #ComponentModel.query.filter(ComponentModel.process_id==process_id).filter(ComponentModel.component_status1 == 3).update({'component_status1':3})
             #db.session.commit()
             db.session.commit()
@@ -160,23 +206,61 @@ class CheckProcessStatus(Resource):
 @jwt_required()
 def overviewStatus():
     username = current_identity.to_dict()['username']
+    u_auth = UserAuth().getUserAuth(username)
     req_data = request.json
     conditions = []
     parser = reqparse.RequestParser()    
     parser.add_argument('role_type')
     args = parser.parse_args()
     role_type = args['role_type']
-    if role_type == 'process_owner':
+    if role_type == 'process_owner' and u_auth != 'adminAll':
         conditions.append(ProcessModel.process_owner == username)
-    if role_type == "experimenter":
+    if role_type == "experimenter" and u_auth != 'adminAll':
         conditions.append(ProcessModel.experimenter == username)
     print(username)
     print (role_type)
-    allIncident = ProcessModel.query.filter(*conditions).count() #分配给自己的工序
-    finishIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 4).count() #已完成
-    assginIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 2).count() #已分配和待领取
-    processIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 3).count() #实验中
-    unassginIncident =  ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 1).count()#待分配
+    if role_type == 'experimenter':
+        if u_auth != 'adminAll':
+            sql1 = 'SELECT count(*) as c FROM SUB_PROCESS_VIEW WHERE experimenter = (:USER)'
+            sql2 = 'SELECT count(*) as c FROM SUB_PROCESS_VIEW WHERE subProStatus = 4 AND experimenter = (:USER)'
+            sql3 =  'SELECT count(*) as c FROM SUB_PROCESS_VIEW WHERE experimenter = (:USER) and subProStatus = 2'
+            sql4 = 'SELECT count(*) as c FROM SUB_PROCESS_VIEW WHERE experimenter = (:USER) and subProStatus = 3'
+            sql5 = 'SELECT count(*) as c FROM SUB_PROCESS_VIEW WHERE experimenter = (:USER) and subProStatus = 1'
+
+        else:
+            sql1 =  'SELECT count(*) as c FROM SUB_PROCESS_VIEW'
+            sql2 = 'SELECT count(*) as c FROM SUB_PROCESS_VIEW WHERE subProStatus = 4'
+            sql3 = 'SELECT count(*) as c FROM SUB_PROCESS_VIEW WHERE subProStatus = 2'
+            sql4 = 'SELECT count(*) as c FROM SUB_PROCESS_VIEW WHERE  subProStatus = 3'
+            sql5 = 'SELECT count(*) as c FROM SUB_PROCESS_VIEW WHERE subProStatus = 1'
+        allIncident = db.session.execute(
+            sql1, {
+                "USER": username}
+        ).scalar()        
+        finishIncident = db.session.execute(
+            sql2, {
+                "USER": username}
+        ).scalar()#已完成
+        assginIncident = db.session.execute(
+            sql3, {
+                "USER": username}
+        ).scalar()#已分配和待领取
+        processIncident =  db.session.execute(
+            sql4, {
+                "USER": username}
+        ).scalar()#实验中
+
+        unassginIncident = db.session.execute(sql4, {
+                "USER": username}
+        ).scalar()#待分配
+    else:
+
+        allIncident = ProcessModel.query.filter(*conditions).count() #分配给自己的工序
+        finishIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 4).count() #已完成
+        assginIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 2).count() #已分配和待领取
+        processIncident = ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 3).count() #实验中
+        unassginIncident =  ProcessModel.query.filter(*conditions).filter(ProcessModel.process_status == 1).count()#待分配
+    
     data = {
         "allIncident":allIncident,
         "finishIncident":finishIncident,
@@ -197,6 +281,10 @@ def dashBoardProcess(order_number):
     else:
         conditions.append(ComponentModel.order_number == order_number)
     inStore = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 1)) #已入库
+    inWaitMeasure = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 0)) #待测样品入库
+    inComplete = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 1).filter(ComponentModel.component_status1 == 6)) #成品入库
+    inError = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 1).filter(ComponentModel.component_status1 == 5)) #成品入库
+
     inMeasure = get_count(ComponentModel.query.join(ProcessModel,ComponentModel.process_id == ProcessModel.process_id).filter(*conditions).filter(ComponentModel.component_status == 2).filter(ProcessModel.process_name.like("%" +"测量"+ "%")))
     print(inMeasure)
     #results = [dict(zip(result.keys(), result)) for result in inMeasure]
@@ -216,13 +304,16 @@ def dashBoardProcess(order_number):
         "inStore":inStore,
         "inPaste":inPaste,
         "inLossless":inLossless,
-        "inExp":inExp
+        "inExp":inExp,
+        "inError":inError,
+        "inComplete":inComplete,
+        "inWaitMeasure":inWaitMeasure
     }
     return data
 
 @app.route('/processAlert')
 def processAlert():
-    data = db.session.execute('SELECT * FROM sfincident.PROCESS_ALERT').fetchall()
+    data = db.session.execute('SELECT * FROM PROCESS_ALERT').fetchall()
     results = [dict(zip(result.keys(), result)) for result in data]
     for entity in results:
         entity['start_time_d'] = datetime.datetime.strftime(entity['start_time_d'], '%Y%m%d')

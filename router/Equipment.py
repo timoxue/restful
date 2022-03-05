@@ -13,12 +13,14 @@ from flask_jwt import JWT, jwt_required, current_identity
 class Equipement(Resource):
     def post(self):       
         result = request.json['data']
-        db.session.execute("truncate table equipment")
-        db.session.commit()
+        id = request.json['id']
+        #db.session.execute("truncate table equipment")
+        
         for i in result:
             Equipment = EquipmentModel()
-            equip = Equipment.from_dict(i)
-            db.session.add(equip)
+            #equip = Equipment.from_dict(i)
+            EquipmentModel.query.filter_by(id=id).update(i)
+            
             db.session.commit()
            
         return Success.message, Success.code
@@ -28,7 +30,7 @@ class Equipement(Resource):
        
         try:
             EquipmentModel.query.filter_by(id=id).update(data)
-        
+            
 
             db.session.commit()
         except IntegrityError as e:

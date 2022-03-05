@@ -12,7 +12,7 @@ from flask_jwt import JWT, jwt_required, current_identity
 
 class PieDataList(Resource):
     def get(self):
-        results = PieDataModel.query.with_entities(PieDataModel.data_type,PieDataModel.count).all()
+        results = PieDataModel.query.with_entities(PieDataModel.id,PieDataModel.data_type,PieDataModel.count).all()
         response_data =  [dict(zip(result.keys(), result)) for result in results]
         return response_data
     
@@ -23,7 +23,7 @@ class PieDataList(Resource):
             #print (value)
 
             PieDataModel.query.filter(
-                PieDataModel.data_type == value['data_type']).update(value)
+                PieDataModel.id == value['id']).update(value)
 
             db.session.commit()
         return Success.message, Success.code        

@@ -12,16 +12,73 @@ from models.db import app
 from sqlalchemy import or_,and_
 from flask_jwt import JWT, jwt_required, current_identity
 from router.Message import MessageList
-
+from router.User import UserAuth
 
 from router.Status import Success, NotFound, NotUnique,DBError
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import datetime
 
 class Incident(Resource):
+    def get(self,incident_id):
+        incident = IncidentModel.query.filter_by(incident_id=incident_id).first()
+        if incident:
+            return incident.to_dict()
+        return NotFound.message, NotFound.code
+
+    def put (self,incident_id):
+        data = request.json['data']
+        
+        try:
+            IncidentModel.query.filter_by(incident_id=incident_id).update(data)
+        
+        #db.session.commit()
+
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
+        return Success.message, Success.code   
+
+
+
+
+
+
+class IncidentList(Resource):
+    @jwt_required()
     def get(self):
-        result = [incident.to_dict() for incident in IncidentModel.query.all()]
-        return {'data': result}
+        username = current_identity.to_dict()['username']
+        # parser = reqparse.RequestParser()
+        # parser.add_argument('incident_status', type=int)
+        # args = parser.parse_args()
+        print(username)
+        u_auth = UserAuth().getUserAuth(username)
+        conditions = []
+        if(u_auth != 'adminAll'):
+            conditions.append(IncidentModel.create_name == username)
+        
+        results = IncidentModel.query.filter(*conditions). \
+        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).\
+        filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2,ProcessModel.process_status == 3,and_(ProcessModel.process_status == 4, ProcessModel.pos_process_id == None))).\
+        join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number).\
+        join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
+        with_entities(ProgramModel.pro_name, ProgramModel.pro_id,\
+                IncidentModel.incident_status,\
+                IncidentModel.incident_id, IncidentModel.create_name, ProgramModel.order_number,
+                ProcessModel.process_id, 
+                ProcessModel.process_owner,
+                IncidentModel.create_at,   ProjectModel.finish_time, ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
+
+        response_data = [dict(zip(result.keys(), result)) for result in results]
+        for entity in response_data:
+                entity['start_time_d'] = datetime.datetime.strftime(entity['start_time_d'], '%Y-%m-%d %H:%M:%S')
+                entity['end_time_d'] = datetime.datetime.strftime(entity['end_time_d'], '%Y-%m-%d %H:%M:%S')
+                entity['create_at'] = datetime.datetime.strftime(entity['create_at'], '%Y-%m-%d %H:%M:%S')
+  
+        return {'data':response_data}
 
     @jwt_required()
     def post(self):
@@ -29,6 +86,7 @@ class Incident(Resource):
         req_data = request.json
 
         req_data['create_name'] = username
+        u_auth = UserAuth().getUserAuth(username)
       #1. get process list and component_list
         component_list = req_data['component_list']
         process_list = req_data['process_list']
@@ -68,6 +126,7 @@ class Incident(Resource):
                 process_list[i]['process_status'] = 1
                 #取第一个工序负责人，并向其发消息
                 recipient_name = process_list[i]['process_owner']
+                
             else:
                 process_list[i]['process_status'] = 0
             p = ProcessModel().from_dict(process_list[i])
@@ -131,6 +190,11 @@ class Incident(Resource):
             value['component_status1'] = 1
             value['outstore_id'] = component_list[i]['outstore_id']
             value['component_unique_id'] = component_list[i]['component_unique_id']
+
+            ##更新试验件的工序负责人和实验室负责人
+            value['experiment_owner'] = username
+            #工序负责人为第一个负责人
+            value['process_owner'] = recipient_name
             #del component_list[i]['create_at']
             #del component_list[i]['update_at']
             try:
@@ -151,45 +215,23 @@ class Incident(Resource):
         return Success.message, Success.code
 
 
-
-
-
-class IncidentList(Resource):
-    @jwt_required()
-    def get(self):
-        username = current_identity.to_dict()['username']
-        # parser = reqparse.RequestParser()
-        # parser.add_argument('incident_status', type=int)
-        # args = parser.parse_args()
-        print(username)
-        results = IncidentModel.query.filter(IncidentModel.create_name == username). \
-        join(ProcessModel,IncidentModel.incident_id==ProcessModel.incident_id).\
-        filter(or_(ProcessModel.process_status == 1,ProcessModel.process_status == 2,ProcessModel.process_status == 3,and_(ProcessModel.process_status == 4, ProcessModel.pos_process_id == None))).\
-        join(ProgramModel, ProgramModel.order_number==IncidentModel.order_number).\
-        join(ProjectModel, ProjectModel.id==ProgramModel.pro_id).\
-        with_entities(ProgramModel.pro_name, ProgramModel.pro_id,
-               
-                IncidentModel.incident_id, IncidentModel.create_name, ProgramModel.order_number,
-                ProcessModel.process_id, ProcessModel.process_name,  IncidentModel.create_at,   ProjectModel.finish_time, ProcessModel.start_time_d, ProcessModel.end_time_d, ProcessModel.process_name,ProcessModel.process_status, ProcessModel.experimenter).all()
-        #incidents = [incident.to_dict() for incident in IncidentModel.query.filter_by(IncidentModel.process_status==args['process_status']).all()]
-
-        response_data = [dict(zip(result.keys(), result)) for result in results]
-        for entity in response_data:
-                entity['start_time_d'] = datetime.datetime.strftime(entity['start_time_d'], '%Y-%m-%d %H:%M:%S')
-                entity['end_time_d'] = datetime.datetime.strftime(entity['end_time_d'], '%Y-%m-%d %H:%M:%S')
-                entity['create_at'] = datetime.datetime.strftime(entity['create_at'], '%Y-%m-%d %H:%M:%S')
-  
-        return {'data':response_data}
-
-
 @app.route('/getOverviewIncStatus')
 @jwt_required()
 def overviewIncidentStatus():
+    
     username = current_identity.to_dict()['username']
-    allIncident = IncidentModel.query.filter(IncidentModel.create_name == username).count()
-    finishIncident = IncidentModel.query.filter(IncidentModel.create_name == username).filter(IncidentModel.incident_status == 2).count()
-    unprocessIncident = IncidentModel.query.filter(IncidentModel.create_name == username).filter(IncidentModel.incident_status == 0).count()
-    processIncident = IncidentModel.query.filter(IncidentModel.create_name == username).filter(IncidentModel.incident_status == 1).count()
+    u_auth = UserAuth().getUserAuth(username)
+    if u_auth != 'adminAll':
+
+        allIncident = IncidentModel.query.filter(IncidentModel.create_name == username).count()
+        finishIncident = IncidentModel.query.filter(IncidentModel.create_name == username).filter(IncidentModel.incident_status == 2).count()
+        unprocessIncident = IncidentModel.query.filter(IncidentModel.create_name == username).filter(IncidentModel.incident_status == 0).count()
+        processIncident = IncidentModel.query.filter(IncidentModel.create_name == username).filter(IncidentModel.incident_status == 1).count()
+    else:
+        allIncident = IncidentModel.query.count()
+        finishIncident = IncidentModel.query.filter(IncidentModel.incident_status == 2).count()
+        unprocessIncident = IncidentModel.query.filter(IncidentModel.incident_status == 0).count()
+        processIncident = IncidentModel.query.filter(IncidentModel.incident_status == 1).count()
     data = {
         "allIncident":allIncident,
         "finishIncident":finishIncident,

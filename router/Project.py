@@ -2,11 +2,13 @@ from flask_restful import Resource
 from flask import Flask, jsonify, abort, request
 from models.project import Project as ProjectModel
 from models.db import db
-from router.Status import Success, NotFound,NotUnique,DBError
+from models.user import User
+from router.Status import Success, NotFound, NotUnique, DBError
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
 from models.db import app
 from router.Message import MessageList
+from router.User import UserAuth
 
 
 class Project(Resource):
@@ -29,59 +31,70 @@ class Project(Resource):
 class ProjectList(Resource):
     @jwt_required()
     def get(self):
+        conditions = []
         username = current_identity.to_dict()['username']
-        print (username)
-        projects = [project.to_dict() for project in ProjectModel.query.filter(ProjectModel.create_name == username).order_by(ProjectModel.create_time.desc()).all()]
-     
-        return {'data':projects}
-        #return {'data': [user.to_dict() for user in ProjectModel.query.filter_by(is_delete = False).all()]}
-    
+        u_auth = UserAuth().getUserAuth(username)
+        print (u_auth)
+        if(u_auth != 'adminAll'):
+            conditions.append(ProjectModel.create_name == username)
+        projects = [project.to_dict() for project in ProjectModel.query.filter(
+            *conditions).order_by(ProjectModel.create_time.desc()).all()]
+
+        return {'data': projects}
+        # return {'data': [user.to_dict() for user in ProjectModel.query.filter_by(is_delete = False).all()]}
+
     def post(self):
-        #print(json.load(request.json))
+        # print(json.load(request.json))
         project = ProjectModel()
         project = project.from_dict(request.json)
         try:
             db.session.add(project)
-        #db.session.commit()
+        # db.session.commit()
 
             db.session.commit()
         except IntegrityError as e:
             print(e)
             return NotUnique.message, NotUnique.code
-        except SQLAlchemyError as e: 
+        except SQLAlchemyError as e:
             print(e)
             return DBError.message, DBError.code
 
-        #new message
-        MessageList().newMeassge(7,project.create_name,project.res_name)
-
+        # new message
+        MessageList().newMeassge(7, project.create_name, project.res_name)
 
         return Success.message, Success.code
 
-    def put (self):
+    def put(self):
         pro_name = request.json['pro_name']
         project = ProjectModel.query.filter_by(pro_name=pro_name).first()
         project = project.from_dict(request.json)
-        #db.session.commit()
+        # db.session.commit()
         try:
             db.session.commit()
         except IntegrityError as e:
             print(e)
             return NotUnique.message, NotUnique.code
-        except SQLAlchemyError as e: 
+        except SQLAlchemyError as e:
             print(e)
             return DBError.message, DBError.code
         return Success.message, Success.code
+
 
 @app.route('/getProjects')
 @jwt_required()
 def getProjects():
     username = current_identity.to_dict()['username']
+    u_auth = UserAuth().getUserAuth(username)
+    print (u_auth)
+    if(u_auth != 'adminAll'):
+        sql = 'select * from PROGRAM_VIEW  where order_number is null and res_name = (:username)'
+    else:
+        sql = 'select * from PROGRAM_VIEW  where order_number is null'
     data = db.session.execute(
-        'select * from PROGRAM_VIEW  where order_number is null and res_name = (:username)',{"username":username}
-         
+            sql, {"username": username}
         ).fetchall()
-    results = [dict(zip(result.keys(), result))  for result in data ]
+        
+    results = [dict(zip(result.keys(), result)) for result in data]
     #projects = [data.to_dict() for data in ProjectModel.query.filter_by(res_name=username).all()]
     data = []
     obj = {}
@@ -92,13 +105,14 @@ def getProjects():
         data.append(obj)
     return {'data': data}
 
+
 @app.route('/getProjectsNoAuth')
 def getProjectsNoAuth():
     data = db.session.execute(
         "select * from PROGRAM_VIEW  where order_number <> '' "
-         
-        ).fetchall()
-    results = [dict(zip(result.keys(), result))  for result in data ]
+
+    ).fetchall()
+    results = [dict(zip(result.keys(), result)) for result in data]
     #projects = [data.to_dict() for data in ProjectModel.query.filter_by(res_name=username).all()]
     data = []
     obj = {}
@@ -112,6 +126,7 @@ def getProjectsNoAuth():
 
 @app.route('/getCompanys')
 def getCompanys():
-    companys =  db.session.query(ProjectModel.company).distinct().with_entities(ProjectModel.company,ProjectModel.contact,ProjectModel.u_email,ProjectModel.postcode,ProjectModel.category,ProjectModel.address,ProjectModel.tele_phone).all()
+    companys = db.session.query(ProjectModel.company).distinct().with_entities(ProjectModel.company, ProjectModel.contact,
+                                                                               ProjectModel.u_email, ProjectModel.postcode, ProjectModel.category, ProjectModel.address, ProjectModel.tele_phone).all()
     response_data = [dict(zip(result.keys(), result)) for result in companys]
-    return {'data':response_data}
+    return {'data': response_data}

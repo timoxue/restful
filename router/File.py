@@ -16,7 +16,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 #import logging
 
-ALLOWED_EXTENSIONS = ['doc', 'docx', 'xlsx', 'txt', 'ppt', 'pptx','png','pdf']
+ALLOWED_EXTENSIONS = ['doc', 'docx', 'xlsx', 'txt', 'ppt', 'pptx','png','pdf','zip']
 
 class File(Resource):
 
@@ -25,7 +25,7 @@ class File(Resource):
     def post(self):
         category = request.form['category']
         #username = current_identity.to_dict()['username']
-        username="tim"
+        username="admin"
         # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part')

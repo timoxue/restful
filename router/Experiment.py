@@ -10,6 +10,7 @@ class Experiment(Resource):
     def post(self):
         experi = ExperimentModel()
         experi = experi.from_dict(request.json)
+        print (experi)
         try:
             db.session.add(experi)
         #db.session.commit()
@@ -49,3 +50,25 @@ class ExperimentList(Resource):
         experiments = ExperimentModel.query.order_by(ExperimentModel.experi_type, ExperimentModel.experi_step).with_entities(ExperimentModel.experi_type, ExperimentModel.experi_step,ExperimentModel.experi_des,ExperimentModel.experiment_name).all()
         response_data = [dict(zip(result.keys(), result)) for result in experiments]
         return {'data':response_data}
+    
+    def post(self):
+        request_data = request.json
+        print(request_data)
+        ExperimentList = request_data['data']
+        for value in ExperimentList:
+            print(value)
+            experi = ExperimentModel()
+            experi = experi.from_dict(value)
+            print (experi)
+            try:
+                db.session.add(experi)
+                db.session.commit()
+            except IntegrityError as e:
+                print(e)
+                return NotUnique.message, NotUnique.code
+            except SQLAlchemyError as e: 
+                print(e)
+                return DBError.message, DBError.code
+
+        return Success.message, Success.code
+             

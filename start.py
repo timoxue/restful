@@ -11,6 +11,7 @@ from router.Component import Component
 from router.Experiment import Experiment,ExperimentList
 from router.Incident import Incident,IncidentList
 from router.Process import ProcessStatus
+from router.Process import Process
 from router.Process import ProcessList
 from router.Message import Message,MessageList
 from router.Component import ComponentList
@@ -53,15 +54,16 @@ api.add_resource(InstoreList, '/instores')
 
 api.add_resource(OutstoreList, '/outstores')
 api.add_resource(Outstore, '/outstore/<id>')
-
+api.add_resource(Process,'/process/<string:process_id>')
 
 api.add_resource(Instore, '/instore/<id>')
-api.add_resource(Component, '/components')
+api.add_resource(Component, '/components/<string:component_unique_id>')
+# api.add_resource(Component, '/components')
 api.add_resource(Experiment, '/experiment')
 api.add_resource(ExperimentList, '/experimentlist')
 
 api.add_resource(IncidentList, '/incidents')
-api.add_resource(Incident, '/incident')
+api.add_resource(Incident, '/incident/<string:incident_id>')
 
 api.add_resource(ProcessList, '/get_processes')
 api.add_resource(ProcessStatus, '/process_status')
@@ -91,5 +93,6 @@ api.add_resource(RuletList,"/rules")
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
+    #app.run(host='10.91.29.107', port=5000, debug=False)
     #logging.info("Server is Started")

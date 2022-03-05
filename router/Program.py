@@ -4,10 +4,10 @@ from models.program import Program as ProgramModel
 from models.project import Project as ProjectModel
 from models.instore import Instore as InstoreModel
 from models.db import app
-
+from router.User import UserAuth
 from models import Combined
 from models.db import db
-from router.Status import Success, NotFound,NotUnique,DBError
+from router.Status import Success, NotFound, NotUnique, DBError
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
 from sqlalchemy.sql import func
@@ -40,7 +40,7 @@ class Program(Resource):
         program = ProgramModel.query.filter_by(task_id=task_id).first()
         db.session.delete(program)
         db.session.commit()
-        
+
         return Success.message, Success.code
 
 
@@ -58,24 +58,19 @@ class ProgramList(Resource):
     @jwt_required()
     def get(self):
         username = current_identity.to_dict()['username']
-        #instore_table = db.session.query(InstoreModel.program_code,func.sum(InstoreModel.is_num).label('sum')).group_by(InstoreModel.program_code).all()
-        #print (type(instore_table))
-        #data = [dict(zip(result.keys(), result)) for result in instore_table]
+        u_auth = UserAuth().getUserAuth(username)
+        print (u_auth)
+        if(u_auth != 'adminAll'):
+            sql = 'SELECT * FROM PROGRAM_VIEW WHERE RES_NAME = (:USER) ORDER BY create_time DESC'
+        else:
+            sql = 'SELECT * FROM PROGRAM_VIEW  ORDER BY create_time DESC'
 
-        # joined_table = db.session.query(ProgramModel, func.sum(InstoreModel.is_num-InstoreModel.in_store_num).label(
-        # 'w_sum')).outerjoin(InstoreModel, InstoreModel.program_code == ProgramModel.program_code).group_by(ProgramModel).all()
-        #joined_table = joined_table.query()
-        # print((joined_table))
-        # test1
-        # result = Combined(
-        #     ProgramModel, InstoreModel.is_num).to_dict(joined_table)
-        data = db.session.execute(
-            'SELECT * FROM sfincident.PROGRAM_VIEW WHERE RES_NAME = (:USER) ORDER BY create_time DESC', {
-                "USER": username}
+        data = db.session.execute(sql, {
+            "USER": username}
         ).fetchall()
 
         results = [dict(zip(result.keys(), result)) for result in data]
-        #print(results)
+        # print(results)
         str = json.dumps(results, cls=DateEncoder)
         result = json.loads(str)
         return {'data': result}
@@ -90,12 +85,12 @@ class ProgramList(Resource):
         program.create_name = username
         try:
             db.session.add(program)
-        #db.session.commit()
+        # db.session.commit()
             db.session.commit()
         except IntegrityError as e:
             print(e)
             return NotUnique.message, NotUnique.code
-        except SQLAlchemyError as e: 
+        except SQLAlchemyError as e:
             print(e)
             return DBError.message, DBError.code
         return Success.message, Success.code
@@ -104,13 +99,13 @@ class ProgramList(Resource):
         pro_name = request.json['pro_name']
         program = ProgramModel.query.filter_by(pro_name=pro_name).first()
         program = program.from_dict(request.json)
-        #db.session.commit()
+        # db.session.commit()
         try:
             db.session.commit()
         except IntegrityError as e:
             print(e)
             return NotUnique.message, NotUnique.code
-        except SQLAlchemyError as e: 
+        except SQLAlchemyError as e:
             print(e)
             return DBError.message, DBError.code
         return Success.message, Success.code
@@ -130,22 +125,25 @@ def programsParameters():
 
     return {'data': data}
 
+
 @app.route('/programProcess')
 def programProcess():
     data = db.session.execute(
-            'SELECT * FROM sfincident.PROGRAM_PROCESS ORDER BY percent DESC limit 10').fetchall()
+        'SELECT * FROM PROGRAM_PROCESS ORDER BY percent DESC limit 10').fetchall()
 
     results = [dict(zip(result.keys(), result)) for result in data]
-    
+
     str = json.dumps(results, cls=DateEncoder)
     result = json.loads(str)
     return {'data': result}
 
+
 @app.route('/programAlert')
 def programAlert():
-    data = db.session.execute('SELECT * FROM sfincident.PROGRAM_ALERT').fetchall()
+    data = db.session.execute(
+        'SELECT * FROM sfincident.PROGRAM_ALERT').fetchall()
     results = [dict(zip(result.keys(), result)) for result in data]
-  
+
     str = json.dumps(results, cls=DateEncoder)
     result = json.loads(str)
     return {'data': result}

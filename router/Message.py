@@ -53,7 +53,7 @@ class MessageList(Resource):
         username = current_identity.to_dict()['username']
      
         messages =  MessageModel.query.filter(
-            MessageModel.recipient_name == username).filter(MessageModel.message_satus == 0).join(MessagetxtModel,MessagetxtModel.message_type == MessageModel.message_type).with_entities(MessageModel.message_id,MessageModel.recipient_name,MessagetxtModel.message_notes,MessageModel.message_satus,MessageModel.create_name,MessageModel.create_at).all()
+            MessageModel.recipient_name == username).join(MessagetxtModel,MessagetxtModel.message_type == MessageModel.message_type).with_entities(MessageModel.message_id,MessageModel.recipient_name,MessagetxtModel.message_notes,MessageModel.message_satus,MessageModel.create_name,MessageModel.create_at).all()
         response_data = [dict(zip(result.keys(), result)) for result in messages]
         count = len(response_data)
         str = json.dumps(response_data, cls=DateEncoder)

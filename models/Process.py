@@ -34,8 +34,8 @@ class Process(db.Model, Serializrable):
     experiment_owner = db.Column(db.String(20), nullable=False)
     #工序负责人
     process_owner = db.Column(db.String(20))
-    #实验员
-    experimenter = db.Column(db.String(20))
+    #实验员  #工序以数组的形式存储实验员
+    experimenter = db.Column(db.String(180))
     #步骤
     step_number = db.Column(db.Integer, nullable=False)
     #实验单id
@@ -45,4 +45,4 @@ class Process(db.Model, Serializrable):
     
         
     def __repr__(self):
-         return '(%r, %r)' % (self.process_name, self.process_status)
+         return '(%r,%r, %r)' % (self.process_id,self.process_name, self.process_status)

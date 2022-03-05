@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 import re
 from flask.wrappers import Response
+from sqlalchemy.orm import compile_mappers
+from sqlalchemy.sql.expression import null
 from sqlalchemy.sql.schema import Constraint
 from models import instore
 from models import program
+from models import Component_his
 from models.instore import Instore
 from flask_restful import Resource, Api, reqparse
 from flask import Flask, jsonify, abort, request
@@ -18,12 +21,15 @@ from models.db import app
 from sqlalchemy import or_  
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
-
+from flask import send_file, send_from_directory, safe_join, abort
+from io import BytesIO
+import os
+import zipfile
 from models.db import db
 from router.Status import Success, NotFound,NotAllow, NotUnique,DBError
 import datetime
-
-
+from router.User import UserAuth
+from models.FileModel import FileModel
 class Component(Resource):
     def post(self):
         try:
@@ -42,7 +48,22 @@ class Component(Resource):
         db.session.commit()
         return Success.message, Success.code
 
+    def put(self,component_unique_id):
+        data = request.json['data']
+       
+        try:
+            ComponentModel.query.filter_by(component_unique_id=component_unique_id).update(data)
+        
 
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
+        return Success.message, Success.code      
+           
 @app.route('/scanCode',methods=['POST'])
 def scanCode():
     request_data = request.json
@@ -82,12 +103,12 @@ def comOverview():
     componentInstore = db.session.query(ComponentModel).filter(ComponentModel.component_status != None).filter(ComponentModel.component_status1 == None).count() #样品入库
     componentProcess = db.session.query(ComponentModel).filter(or_(ComponentModel.component_status1 != 5,ComponentModel.component_status1 != 6)).filter(ComponentModel.component_status == 2).count() #实验中
     componentDelivered = db.session.query(ComponentModel).filter(ComponentModel.component_status1 == 6).filter(ComponentModel.component_status == 1).count() #待交付
-   
+    
     # incidents = db.session.query(IncidentModel).count()
     # incidentsFinish = db.session.query(IncidentModel).filter(IncidentModel.incident_status == 2).count()
     # programAll = db.session.query(ProgramModel).count()
     # data = db.session.execute(
-    #         'SELECT count(*) as count FROM sfincident.PROGRAM_VIEW WHERE sample_num = is_finish'
+    #         'SELECT count(*) as count FROM PROGRAM_VIEW WHERE sample_num = is_finish'
     #     ).fetchall()
 
     # results = [dict(zip(result.keys(), result)) for result in data]
@@ -104,6 +125,7 @@ def comOverview():
 def checkComponent():
     request_data = request.json
     component_unique_id = request_data['component_unique_id']
+    print(component_unique_id)
     is_type = request_data['is_type']
     conditions = []
     if 'id' in request_data:
@@ -128,13 +150,13 @@ def checkComponent():
         # resp = Response({
         #      'message':'试验件编码不存在，请重新扫码'
         # })
-        abort(resp)
+        abort(404)
     else:
         u = db.session.query(ComponentModel).filter(*conditions).filter(ComponentModel.component_unique_id == component_unique_id).first()
         
         if u is None:
             resp = jsonify({'message':"试验件编码在当前委托单编号号不存在或已完成出入库！"})
-            abort(resp)
+            abort(404)
          
 
         if is_type == 0:  # 待测样品
@@ -148,18 +170,35 @@ def checkComponent():
         elif is_type == 2:  # 问题样品
             status = 5
             status1 = 5 #成品或者完成样品
-      
 
 
         if u.component_status1 != status and u.component_status1 != status1:
-              # 错误的入库类型
+            # 错误的入库类型
             resp = jsonify({'message':'试验件不符合入库或出库标准，请检查！'})
             # resp = Response({
             #     'message':'试验件入符合入库标准，请检查！'
             # })
-            abort(resp)
+            abort(500)
         else:
-            return {'message': '试验件符合入库或出库标准'},Success.code
+            if is_type != 0:
+                i = db.session.query(IncidentModel).filter(IncidentModel.incident_id == u.incident_id).first()
+                if i.incident_status != 2: #工单未审核
+                    resp = jsonify({'message':'该工单未审核，试验件不可提交'})
+                    abort(500)
+                else:
+                    return {'message': '试验件符合入库或出库标准'},Success.code
+            else:
+                return {'message': '试验件符合入库或出库标准'},Success.code
+            
+            # if u.component_status1 != status and u.component_status1 != status1:
+            #   # 错误的入库类型
+            #     resp = jsonify({'message':'试验件不符合入库或出库标准，请检查！'})
+            # # resp = Response({
+            # #     'message':'试验件入符合入库标准，请检查！'
+            # # })
+            #     abort(500)
+            # else:
+                    
           
 
 
@@ -180,10 +219,18 @@ def loadCodeComponent(instore_id):
     result = [data.to_dict() for data in u]
     return {'data': result}
 
+@app.route('/incidentUncheckComponents/<incident_id>')
+def incidentUncheckComponents(incident_id):
+    u = db.session.query(ComponentModel).\
+    filter(ComponentModel.incident_id == incident_id)\
+    .all()
+    result = [data.to_dict() for data in u]
+    return {'data': result}
+
 
 @app.route('/incidentComponents/<incident_id>')
 def incidentComponents(incident_id):
-    u = db.session.query(ComponentModel).filter(ComponentModel.incident_id == incident_id).filter(ComponentModel.component_status == 1).all()
+    u = db.session.query(ComponentModel).filter(ComponentModel.incident_id == incident_id).all()
     result = [data.to_dict() for data in u]
     return {'data': result}
 
@@ -192,6 +239,7 @@ class ComponentList(Resource):
     @jwt_required()
     def get(self):
         username = current_identity.to_dict()['username']
+        u_auth = UserAuth().getUserAuth(username)
         parser = reqparse.RequestParser()
         parser.add_argument('process_id', type=int)
         parser.add_argument('process_status', type=int)
@@ -201,7 +249,7 @@ class ComponentList(Resource):
         response_data = {}
         conditions = []
         role_type = args['role_type']
-        if role_type == 'process_owner':
+        if role_type == 'process_owner' and u_auth != 'adminAll':
             conditions.append(ComponentModel.process_owner == username)
         if role_type == "experimenter":
             conditions.append(ComponentModel.experimenter == username)        
@@ -244,7 +292,16 @@ class ComponentList(Resource):
         response_data["processes"] = group_processes_names
 
         # 3 get group Components
-        group_components = ComponentModel.query.filter(*conditions).filter(ComponentModel.incident_id == group_incident_id) \
+        if response_data['process_status'] == 4: #当前工序已经完成，读历史components
+            conditions = []
+            if role_type == 'process_owner' and u_auth != 'adminAll':
+                conditions.append(ComponentHisModel.process_owner == username)
+            if role_type == "experimenter":
+                conditions.append(ComponentHisModel.experimenter == username)          
+            group_components = ComponentHisModel.query.filter(*conditions).filter(ComponentHisModel.incident_id == group_incident_id) \
+            .filter(ComponentHisModel.process_id == args['process_id']).all()
+        else:
+            group_components = ComponentModel.query.filter(*conditions).filter(ComponentModel.incident_id == group_incident_id) \
             .all()
         components_data = [result.to_dict() for result in group_components]
 
@@ -265,9 +322,9 @@ class ComponentList(Resource):
 
         if 'id' in request_data:
             instore_id = request_data['id']
-           
+        
         for value in ComponentList:
-            #print (value)
+            print (value)
             if 'component_status1' not in value:
                 is_type = Instore().checkInstoreType(instore_id)
                 if is_type == 0:  # 待测样品
@@ -285,6 +342,24 @@ class ComponentList(Resource):
             db.session.commit()
         return Success.message, Success.code
 
+    def post(self):
+        try:
+            db.session.execute(
+                ComponentModel.__table__.insert(),
+                request.json['data']
+            )
+        #db.session.commit()
+      
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+             print(e)
+             return DBError.message, DBError.code
+        db.session.commit()
+        return Success.message, Success.code
+
+    
 
 class CheckComponent(Resource):
     def post(self):
@@ -317,20 +392,56 @@ class CheckComponent(Resource):
 
 
 class ReportFailureComponent(Resource):
-    def post(self, component_unique_id):
+    def put(self, component_unique_id):
+        data = request.json['data']
         ComponentModel.query.filter(
-            ComponentModel.component_unique_id == component_unique_id).update({'component_status1': 5})
-        db.session.commit()
+            ComponentModel.component_unique_id == component_unique_id).update(data)
+        try:
+            db.session.commit()
+        except IntegrityError as e:
+            print(e)
+            return NotUnique.message, NotUnique.code
+        except SQLAlchemyError as e: 
+            print(e)
+            return DBError.message, DBError.code
         return Success.message, Success.code
 
+@app.route("/ComponentHisStatus/<component_unique_id>",methods=['POST'])
+def ComponentHisStatus(component_unique_id):
+    value = request.json
+    #status = value['component_status1']
+    try:
+        ComponentHisModel.query.filter_by(component_unique_id=component_unique_id).update(value)
+        
+ 
+        db.session.commit()
+    except IntegrityError as e:
+        print(e)
+        return NotUnique.message, NotUnique.code
+    except SQLAlchemyError as e: 
+        print(e)
+        return DBError.message, DBError.code
+    return Success.message, Success.code    
+    
 
+ 
+
+@app.route("/checkComponentFailure",methods=['POST'])
+def checkComponentFailure():
+    incident_id = request.json['incident_id']
+    type = request.json['type']
+    if type == 'count':
+        return {'data':  ComponentModel.query.filter_by(incident_id=incident_id).filter_by(is_check = 2).filter_by(component_status1=5).count()}
+    else:
+
+        return {'data': [component.to_dict() for component in ComponentModel.query.filter_by(incident_id=incident_id).filter_by(is_check = 2).filter_by(component_status1=5).all()]}
 
 
 @app.route("/componentTime",methods=['GET'])
 def componentTime():
 
     data = db.session.execute(
-            'SELECT *  FROM sfincident.component_series where finish != 0 limit 7'
+            'SELECT *  FROM component_series where finish != 0 limit 7'
         ).fetchall()
 
     results = [dict(zip(result.keys(), result)) for result in data]
@@ -346,10 +457,12 @@ def componentDetail(component_unique_id):
         .join(ProgramModel, ProgramModel.order_number == IncidentModel.order_number) \
         .join(ProjectModel, ProjectModel.id == ProgramModel.pro_id) \
         .with_entities(ComponentModel.component_unique_id,ProgramModel.pro_name,ProgramModel.task_name_book,
-        ProjectModel.create_name,
+        ProgramModel.create_name,ProjectModel.create_name.label('pro_create_name'),
         ComponentModel.process_id,ComponentModel.component_status,ComponentModel.component_status1,
         ComponentModel.create_at,ComponentModel.experiment_owner,ComponentModel.incident_id,
-        ComponentModel.experimenter,ComponentModel.process_owner,ComponentModel.order_number,ComponentModel.instore_id,ProcessModel.start_time_d,ProcessModel.end_time_d,IncidentModel.create_name,IncidentModel.experi_project,IncidentModel.experi_rely,IncidentModel.experi_type)\
+        ComponentModel.experimenter,ComponentModel.process_owner,ComponentModel.order_number,
+        ComponentModel.is_check,
+        ComponentModel.instore_id,ProcessModel.start_time_d,ProcessModel.end_time_d,IncidentModel.create_name,IncidentModel.experi_project,IncidentModel.experi_rely,IncidentModel.experi_type)\
         .first()
     print(component)
     process_id = component.process_id
@@ -418,7 +531,7 @@ def componentId():
 @app.route('/componentEfficiency')
 def componentEfficiency():
     data = db.session.execute(
-            'SELECT *  FROM SFINCIDENT.efficiency limit 10'
+            'SELECT *  FROM efficiency limit 10'
         ).fetchall()
 
     results = [dict(zip(result.keys(), result)) for result in data]
@@ -426,3 +539,46 @@ def componentEfficiency():
     return {
         'data':results
     }
+
+@app.route('/dowComponents/<file_id>')
+def dowComponents(file_id):
+    id_list = file_id.split(",")
+    #data = request.json['list']
+    com_his = ComponentHisModel.query.filter(ComponentHisModel.component_unique_id.in_(id_list))
+    #寻找当前试验件ID对应的file-id
+    results = [d.to_dict() for d in com_his]
+    for r in results:
+        file_id = r['experiment_sheet_id']
+        print(file_id)
+        # if file_id is None:
+        #     pass
+        # else:
+        #     target_file = FileModel.query.filter(FileModel.id==file_id).first()
+        #     if target_file is None:
+        #         pass
+        #     else:
+        #         location = target_file.f_location
+        #         file_name = target_file.f_filename
+        #         extension = file_name.rsplit('.', 1)[-1].lower()
+        #         f_name = str(file_id)+"."+extension
+    memory_file = BytesIO()
+    with zipfile.ZipFile(memory_file, "w", zipfile.ZIP_DEFLATED) as zf:
+        for _file in results:
+            file_id = _file['experiment_sheet_id']
+            target_file = FileModel.query.filter(FileModel.id==file_id).first()
+            if target_file is None:
+                pass
+            else:
+                location = target_file.f_location
+                file_name = target_file.f_filename
+                extension = file_name.rsplit('.', 1)[-1].lower()
+                f_name = str(file_id)+"."+extension
+                print(f_name)
+                with open(os.path.join(location, f_name), 'rb') as fp:
+                    zf.writestr(file_name, fp.read())        
+    
+    
+    memory_file.seek(0)
+    #print(memory_file)
+    #return send_from_directory(location, filename=f_name, as_attachment=True)
+    return send_file(memory_file, attachment_filename='test.zip', as_attachment=True)

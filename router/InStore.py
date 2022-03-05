@@ -13,7 +13,7 @@ from models.db import db
 from router.Status import Success, NotFound,NotUnique,DBError
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from flask_jwt import JWT, jwt_required, current_identity
-
+from router.User import UserAuth
 
 class Instore(Resource):
     # @jwt_required()
@@ -47,7 +47,11 @@ class InstoreList(Resource):
     @jwt_required()
     def get(self):
         username = current_identity.to_dict()['username']
-        results = InstoreModel.query.filter(InstoreModel.create_name == username).join(ProgramModel,InstoreModel.order_number == ProgramModel.order_number).\
+        conditions = []
+        u_auth = UserAuth().getUserAuth(username)
+        if(u_auth != 'adminAll'):
+            conditions.append(InstoreModel.create_name == username)        
+        results = InstoreModel.query.filter(*conditions).join(ProgramModel,InstoreModel.order_number == ProgramModel.order_number).\
         with_entities(InstoreModel.id,InstoreModel.is_num,InstoreModel.is_status,InstoreModel.is_type,InstoreModel.location,InstoreModel.order_number,InstoreModel.in_store_num,InstoreModel.check_name,InstoreModel.check_time,InstoreModel.check_form_id,ProgramModel.pro_name,InstoreModel.in_date,InstoreModel.store_name,ProgramModel.task_name_book).order_by(InstoreModel.in_date.desc()).all()
         response_data = [dict(zip(result.keys(), result)) for result in results]
         return {'data': response_data}

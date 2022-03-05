@@ -9,7 +9,7 @@ class NotUnique:
 
 class NotFound:
     code = 404
-    message = {'message': '试验件编码不存在'}
+    message = {'message': '未找到'}
 
 class NotAllow:
     code = 406

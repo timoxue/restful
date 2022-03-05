@@ -10,6 +10,7 @@ from models.db import app
 class User(Resource):
     #@jwt_required()
     def get(self, user_id):
+        print(UserModel)
         user = UserModel.query.filter_by(username=user_id).first()
         if user:
             return user.to_dict()
@@ -51,7 +52,6 @@ class User(Resource):
         return Success.message, Success.code    
 
 class UserList(Resource):
-    @jwt_required()
     def get(self):
         users = [user.to_dict() for user in UserModel.query.filter_by(is_delete = False).all()]
         for user in users:
@@ -121,4 +121,8 @@ def updateUsers():
         return DBError.message, DBError.code
     return Success.message, Success.code    
 
+class UserAuth(Resource):
+    def getUserAuth(self,u_name):
+        u = UserModel.query.filter_by(username = u_name).first()
+        return u.u_authority
 

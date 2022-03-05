@@ -38,8 +38,11 @@ class Component(db.Model, Serializrable):
     step_number = db.Column(db.Integer)
     #实验单id
     experiment_sheet_id = db.Column(db.Integer)
+    #是否审核通过   1  通过 2 待审核  0 未审核
+    is_check = db.Column(db.Integer,default = 0)
+
     create_at = db.Column(db.DateTime, default=datetime.datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.datetime.now, onupdate=datetime.datetime.now)
     
     def __repr__(self):
-         return '(%r, %r)' % (self.component_name, self.component_unique_id)
+         return '(%r, %r)' % ( self.component_unique_id)
